@@ -1,9 +1,10 @@
 import {Card, CardContent, CardHeader} from '@/components/ui/card';
 import Image from 'next/image';
 import Link from 'next/link';
-import {ProductInterface} from '@/lib/contracts/product';
+import ProductPrice from '@/components/shared/product/product-price';
+import { Product } from '@/lib/contracts/product';
 
-const ProductCard = ({product}: { product: ProductInterface }) => {
+const ProductCard = ({product}: { product: Product }) => {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader className="p-0 items-center">
@@ -25,7 +26,7 @@ const ProductCard = ({product}: { product: ProductInterface }) => {
         <div className="flex-between gap-4">
           <p>{product.rating} Stars</p>
           {product.stock > 0 ? (
-            <p className="font-bold">${product.price}</p>
+            <ProductPrice value={Number(product.price)} />
           ) : (
             <p className="text-destructive">Out Of Stock</p>
           )}

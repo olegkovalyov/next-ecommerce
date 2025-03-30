@@ -1,17 +1,19 @@
-import {ProductInterface} from '@/lib/contracts/product';
+import { Product } from '@/lib/contracts/product';
 import ProductCard from '@/components/shared/product/product-card';
 
-const ProductList = ({data, title}: { data: Array<ProductInterface>; title?: string }) => {
+const ProductList = ({ data, title, limit }: { data: Array<Product>; title?: string; limit?: number }) => {
+
+  const limitedData = limit ? data.slice(0, limit) : data;
+
   return (
     <div className="my-10">
       <h2 className="h2-bold mb-4">{title}</h2>
       {data.length > 0 ? (
-        <div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {data.map((product: ProductInterface) => (
-              <ProductCard product={product} key={product.slug}/>
-            ))}
-          </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {limitedData.map((product: Product) => (
+            <ProductCard key={product.slug} product={product} />
+          ))}
         </div>
       ) : (
         <div>

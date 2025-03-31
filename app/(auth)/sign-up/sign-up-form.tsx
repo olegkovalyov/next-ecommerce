@@ -7,25 +7,23 @@ import Link from 'next/link';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
-import { signInWithCredentials } from '@/lib/actions/auth.actions';
+import { signUpUser } from '@/lib/actions/auth.actions';
 
-const CredentialsSignInForm = () => {
-  const [data, action] = useActionState(signInWithCredentials, {
+const SignUpForm = () => {
+  const [data, action] = useActionState(signUpUser, {
     success: false,
     message: '',
-    email: '',
-    password: '',
   });
 
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
 
-  const SignInButton = () => {
+  const SignUpButton = () => {
     const { pending } = useFormStatus();
 
     return (
       <Button disabled={pending} className="w-full" variant="default">
-        {pending ? 'Signing In...' : 'Sign In'}
+        {pending ? 'Submitting...' : 'Sign Up'}
       </Button>
     );
   };
@@ -35,14 +33,23 @@ const CredentialsSignInForm = () => {
       <input type="hidden" name="callbackUrl" value={callbackUrl} />
       <div className="space-y-6">
         <div>
+          <Label htmlFor="email">Name</Label>
+          <Input
+            id="name"
+            name="name"
+            type="text"
+            autoComplete="name"
+            defaultValue=""
+          />
+        </div>
+        <div>
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
             name="email"
-            type="email"
-            required
+            type="text"
             autoComplete="email"
-            defaultValue={data.email}
+            defaultValue=""
           />
         </div>
         <div>
@@ -53,24 +60,32 @@ const CredentialsSignInForm = () => {
             type="password"
             required
             autoComplete="password"
-            defaultValue={data.password}
+            defaultValue=""
           />
         </div>
         <div>
-          <SignInButton />
+          <Label htmlFor="confirmPassword">Confirm Password</Label>
+          <Input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            required
+            autoComplete="confirmPassword"
+            defaultValue=""
+          />
+        </div>
+        <div>
+          <SignUpButton />
         </div>
 
-        {
-          data
-          && !data.success
-          && (
-            <div className="text-center text-destructive">{data.message}</div>
-          )}
+        {data && !data.success && (
+          <div className="text-center text-destructive">{data.message}</div>
+        )}
 
         <div className="text-sm text-center text-muted-foreground">
-          Don&apos;t have an account?{' '}
-          <Link href="/sign-up" target="_self" className="link">
-            Sign Up
+          Already have an account?{' '}
+          <Link href="/sign-in" target="_self" className="link">
+            Sign In
           </Link>
         </div>
       </div>
@@ -78,4 +93,4 @@ const CredentialsSignInForm = () => {
   );
 };
 
-export default CredentialsSignInForm;
+export default SignUpForm;

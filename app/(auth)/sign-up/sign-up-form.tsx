@@ -78,9 +78,13 @@ const SignUpForm = () => {
           <SignUpButton />
         </div>
 
-        {data && !data.success && (
-          <div className="text-center text-destructive">{data.message}</div>
-        )}
+        {
+          data
+          && !data.success
+          && (
+            <div className="text-center text-destructive">{data.message}</div>
+          )
+        }
 
         <div className="text-sm text-center text-muted-foreground">
           Already have an account?{' '}

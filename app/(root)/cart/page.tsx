@@ -1,12 +1,15 @@
-import { getMyCart } from '@/lib/actions/cart.actions';
 import CartTable from '@/app/(root)/cart/cart-table';
+import { loadCart } from '@/lib/actions/cart/load-cart.action';
 
 export const metadata = {
   title: 'Shopping Cart',
 };
 
 const CartPage = async () => {
-  const cart = await getMyCart();
+  const loadCartResult = await loadCart();
+  const cart = loadCartResult.ok
+    ? loadCartResult.val
+    : undefined;
 
   return (
     <>

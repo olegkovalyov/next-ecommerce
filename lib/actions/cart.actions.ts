@@ -1,13 +1,14 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { convertToPlainObject, formatError, roundNumber } from '../utils';
+import { formatError, roundNumber } from '../utils';
 import { auth } from '@/auth';
 import { prisma } from '@/db/prisma';
 import { revalidatePath } from 'next/cache';
 import { Prisma } from '@prisma/client';
 import { cartItemSchema, insertCartSchema } from '@/lib/validators/cart.validator';
 import { CartItem } from '@/lib/contracts/cart';
+import { loadCart } from '@/lib/actions/cart/load-cart.action';
 
 // Calculate cart prices
 const calcPrice = (items: CartItem[]) => {
@@ -42,7 +43,7 @@ export async function addItemToCart(data: CartItem) {
     const userId = session?.user?.id ? (session.user.id as string) : undefined;
 
 // Get cart
-    const cart = await getMyCart();
+    const loadCartResult = await loadCart();
 
 // Parse and validate item
     const item: CartItem = cartItemSchema.parse(data);
@@ -58,7 +59,7 @@ export async function addItemToCart(data: CartItem) {
       };
     }
 
-    if (!cart) {
+    if (loadCartResult.err) {
       await createNewCart(
         item,
         sessionCartId,
@@ -71,6 +72,8 @@ export async function addItemToCart(data: CartItem) {
         message: `${product.name} added to cart`,
       };
     }
+
+    const cart = loadCartResult.val;
 
     // Check if item is already in cart
     const existItem = (cart.items as CartItem[]).find(
@@ -130,33 +133,6 @@ export async function addItemToCart(data: CartItem) {
   }
 }
 
-export const getMyCart = async () => {
-// Check for cart cookie
-  const sessionCartId = (await cookies()).get('sessionCartId')?.value;
-  if (!sessionCartId) throw new Error('Cart session not found');
-
-// Get session and user ID
-  const session = await auth();
-  const userId = session?.user?.id ? (session.user.id as string) : undefined;
-
-// Get user cart from database
-  const cart = await prisma.cart.findFirst({
-    where: userId ? { userId: userId } : { sessionCartId: sessionCartId },
-  });
-
-  if (!cart) return undefined;
-
-// Convert decimals and return
-  return convertToPlainObject({
-    ...cart,
-    items: cart.items as CartItem[],
-    itemsPrice: cart.itemsPrice.toString(),
-    totalPrice: cart.totalPrice.toString(),
-    shippingPrice: cart.shippingPrice.toString(),
-    taxPrice: cart.taxPrice.toString(),
-  });
-};
-
 const createNewCart = async (
   item: CartItem,
   sessionCartId: string,
@@ -175,7 +151,6 @@ const createNewCart = async (
   });
 };
 
-
 export async function removeItemFromCart(productId: string) {
   try {
     // Check for cart cookie
@@ -183,7 +158,7 @@ export async function removeItemFromCart(productId: string) {
     if (!sessionCartId) {
       return {
         success: false,
-        message: 'Cart session not found'
+        message: 'Cart session not found',
       };
     }
 
@@ -194,27 +169,28 @@ export async function removeItemFromCart(productId: string) {
     if (!product) {
       return {
         success: false,
-        message: 'Product not found'
+        message: 'Product not found',
       };
     }
 
-    // Get user cart
-    const cart = await getMyCart();
-    if (!cart) {
+    const loadCartResult = await loadCart();
+    if (loadCartResult.err) {
       return {
         success: false,
-        message: 'Cart not found'
+        message: 'Cart not found',
       };
     }
+
+    const cart = loadCartResult.val;
 
     // Check for item
     const exist = (cart.items as CartItem[]).find(
-      (x) => x.productId === productId
+      (x) => x.productId === productId,
     );
     if (!exist) {
       return {
         success: false,
-        message: 'Item not found'
+        message: 'Item not found',
       };
     }
 
@@ -222,7 +198,7 @@ export async function removeItemFromCart(productId: string) {
     if (exist.qty === 1) {
       // Remove from cart
       cart.items = (cart.items as CartItem[]).filter(
-        (x) => x.productId !== exist.productId
+        (x) => x.productId !== exist.productId,
       );
     } else {
       // Decrease qty
@@ -248,7 +224,7 @@ export async function removeItemFromCart(productId: string) {
   } catch (error) {
     return {
       success: false,
-      message: formatError(error)
+      message: formatError(error),
     };
   }
 }

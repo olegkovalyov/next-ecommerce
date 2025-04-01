@@ -1,9 +1,9 @@
 import { getProductBySlug } from '@/lib/actions/product.actions';
 import { notFound } from 'next/navigation';
 import ProductImages from '@/components/shared/product/product-images';
-import { getMyCart } from '@/lib/actions/cart.actions';
 import ProductDetails from '@/components/shared/product/product-details';
 import ProductActions from '@/components/shared/product/product-actions';
+import { loadCart } from '@/lib/actions/cart/load-cart.action';
 
 const ProductDetailsPage = async (props: {
   params: Promise<{ slug: string }>;
@@ -15,7 +15,10 @@ const ProductDetailsPage = async (props: {
     notFound();
   }
 
-  const cart = await getMyCart();
+  const result = await loadCart();
+  const cart = result.ok
+    ? result.val
+    : undefined;
 
   return (
     <>

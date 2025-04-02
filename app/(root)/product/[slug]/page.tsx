@@ -20,6 +20,7 @@ const ProductDetailsPage = async (props: {
     ? result.value
     : undefined;
 
+
   return (
     <>
       <section>

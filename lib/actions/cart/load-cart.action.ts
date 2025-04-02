@@ -14,11 +14,8 @@ export const loadCart = async (): Promise<Result<Cart>> => {
   }
 
   const session = await auth();
-  if (!session) {
-    return failure(new Error('Session has expired'));
-  }
+  const userId = session ? session.user.id : null;
 
-  const userId = session.user.id;
   const cart = await prisma.cart.findFirst({
     where: userId ? { userId: userId } : { sessionCartId: sessionCartId },
   });

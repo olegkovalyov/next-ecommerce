@@ -11,10 +11,13 @@ import { revalidatePath } from 'next/cache';
 import { Result, success, failure } from '@/lib/result';
 import { Product } from '@/lib/contracts/product';
 import { updateCartInDb } from '@/lib/actions/cart/update-cart-in-db.action';
+import logger from '@/lib/utils/logger';
 
 export async function addCartItem(cartItem: CartItem): Promise<Result<string, Error>> {
+
   const sessionCartId = (await cookies()).get('sessionCartId')?.value;
   if (!sessionCartId) {
+    logger.warn('Cart session not found');
     return failure(new Error('Cart session not found'));
   }
 
@@ -25,6 +28,7 @@ export async function addCartItem(cartItem: CartItem): Promise<Result<string, Er
     where: { id: item.productId },
   });
   if (!product) {
+    logger.warn('Product not found');
     return failure(new Error('Product not found'));
   }
 
@@ -54,11 +58,13 @@ export async function addCartItem(cartItem: CartItem): Promise<Result<string, Er
   );
 
   if (!processCartItemsResult.success) {
+    logger.warn(processCartItemsResult.error.message);
     return failure(new Error(processCartItemsResult.error.message));
   }
 
   const updateCartResult = await updateCartInDb(cart);
   if (!updateCartResult.success) {
+    logger.warn(updateCartResult.error.message);
     return failure(new Error(updateCartResult.error.message));
   }
   revalidatePath(`/product/${product.slug}`);

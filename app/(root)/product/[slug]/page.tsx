@@ -16,8 +16,8 @@ const ProductDetailsPage = async (props: {
   }
 
   const result = await loadCart();
-  const cart = result.ok
-    ? result.val
+  const cart = result.success
+    ? result.value
     : undefined;
 
   return (

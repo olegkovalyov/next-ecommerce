@@ -7,8 +7,8 @@ export const metadata = {
 
 const CartPage = async () => {
   const loadCartResult = await loadCart();
-  const cart = loadCartResult.ok
-    ? loadCartResult.val
+  const cart = loadCartResult.success
+    ? loadCartResult.value
     : undefined;
 
   return (

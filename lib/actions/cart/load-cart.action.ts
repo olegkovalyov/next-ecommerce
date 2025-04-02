@@ -1,19 +1,21 @@
+'use server';
+
 import { cookies } from 'next/headers';
 import { auth } from '@/auth';
 import { prisma } from '@/db/prisma';
 import { convertToPlainObject } from '@/lib/utils';
 import { Cart, CartItem } from '@/lib/contracts/cart';
-import { Err, Ok, Result } from 'ts-results';
+import { failure, Result, success } from '@/lib/result';
 
-export const loadCart = async (): Promise<Result<Cart, Error>> => {
+export const loadCart = async (): Promise<Result<Cart>> => {
   const sessionCartId = (await cookies()).get('sessionCartId')?.value;
   if (!sessionCartId) {
-    return Err(new Error('Cart session not found'));
+    return failure(new Error('Cart session not found'));
   }
 
   const session = await auth();
   if (!session) {
-    return Err(new Error('Session has expired'));
+    return failure(new Error('Session has expired'));
   }
 
   const userId = session.user.id;
@@ -22,10 +24,10 @@ export const loadCart = async (): Promise<Result<Cart, Error>> => {
   });
 
   if (!cart) {
-    return Err(new Error('Cart not found'));
+    return failure(new Error('Cart not found'));
   }
 
-  return Ok(convertToPlainObject({
+  return success(convertToPlainObject({
     ...cart,
     items: cart.items as CartItem[],
     itemsPrice: cart.itemsPrice.toString(),

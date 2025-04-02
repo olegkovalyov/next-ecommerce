@@ -2,7 +2,6 @@
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useTransition } from 'react';
-import { addItemToCart, removeItemFromCart } from '@/lib/actions/cart.actions';
 import { ArrowRight, Loader, Minus, Plus } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -18,6 +17,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Cart } from '@/lib/contracts/cart';
 import { formatCurrency } from '@/lib/utils';
+import { addCartItem } from '@/lib/actions/cart/add-cart-item.action';
+import { removeCartItem } from '@/lib/actions/cart/remove-cart-item.action';
 
 const CartTable = ({ cart }: { cart?: Cart }) => {
   const router = useRouter();
@@ -66,14 +67,14 @@ const CartTable = ({ cart }: { cart?: Cart }) => {
                         type='button'
                         onClick={() =>
                           startTransition(async () => {
-                            const res = await removeItemFromCart(
+                            const resultRemoveCartItem = await removeCartItem(
                               item.productId
                             );
 
-                            if (!res.success) {
+                            if (!resultRemoveCartItem.success) {
                               toast({
                                 variant: 'destructive',
-                                description: res.message,
+                                description: resultRemoveCartItem.error.message,
                               });
                             }
                           })
@@ -92,12 +93,14 @@ const CartTable = ({ cart }: { cart?: Cart }) => {
                         type='button'
                         onClick={() =>
                           startTransition(async () => {
-                            const res = await addItemToCart(item);
+                            const addCartItemResult = await addCartItem(item);
 
-                            if (!res.success) {
+                            // const res = await addItemToCart(item);
+
+                            if (!addCartItemResult.success) {
                               toast({
                                 variant: 'destructive',
-                                description: res.message,
+                                description: addCartItemResult.error.message,
                               });
                             }
                           })

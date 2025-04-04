@@ -1,78 +1,83 @@
 'use client';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
 import { Plus, Minus, Loader } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { ToastAction } from '@/components/ui/toast';
 import { useTransition } from 'react';
-import { Cart, CartItem } from '@/lib/contracts/cart';
-import { addCartItem } from '@/lib/actions/cart/add-cart-item.action';
-import { removeCartItem } from '@/lib/actions/cart/remove-cart-item.action';
+import { Cart } from '@/lib/contracts/cart';
+import { addToCart } from '@/lib/actions/cart/add-to-cart.action';
+import { removeFromCart } from '@/lib/actions/cart/remove-from-cart.action';
+import { toast } from 'sonner';
 
-const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
-  const router = useRouter();
-  const { toast } = useToast();
+interface AddToCartProps {
+  product: {
+    id: string;
+    name: string;
+    slug: string;
+    price: number;
+    images: string[];
+    stock: number;
+  };
+  cart?: Cart | null;
+}
 
+const AddToCart = ({ product, cart }: AddToCartProps) => {
   const [isPending, startTransition] = useTransition();
 
-  const handleAddToCart = async () => {
+  const handleCartAction = async (action: 'add' | 'remove') => {
     startTransition(async () => {
-      const addCartItemResult = await addCartItem(item);
-      console.log(addCartItemResult);
+      try {
+        const result = action === 'add'
+          ? await addToCart(product, 1)
+          : await removeFromCart(product.id);
 
-      if (!addCartItemResult.success) {
-        toast({
-          variant: 'destructive',
-          description: addCartItemResult.error.message,
-        });
-        return;
+        if (result.success) {
+          toast.success(result.value);
+        } else {
+          toast.error(result.error.message);
+        }
+      } catch (error) {
+        console.error('Error handling cart action:', error);
+        toast.error('Failed to update cart');
       }
-
-      // Handle success add to cart
-      toast({
-        description: addCartItemResult.value,
-        action: (
-          <ToastAction
-            className="bg-primary text-white hover:bg-gray-800"
-            altText="Go To Cart"
-            onClick={() => router.push('/cart')}
-          >
-            Go To Cart
-          </ToastAction>
-        ),
-      });
     });
   };
 
-  // Handle remove from cart
-  const handleRemoveFromCart = async () => {
-    startTransition(async () => {
-      const resultRemoveCartItem = await removeCartItem(item.productId);
+  const existingItem = cart?.items.find(item => item.productId === product.id);
 
-      toast({
-        variant: resultRemoveCartItem.success ? 'default' : 'destructive',
-        description: resultRemoveCartItem.success ? resultRemoveCartItem.value : resultRemoveCartItem.error.message,
-      });
+  if (!existingItem) {
+    return (
+      <Button
+        onClick={() => handleCartAction('add')}
+        disabled={isPending || product.stock <= 0}
+        className="w-full"
+      >
+        {isPending ? 'Adding...' : 'Add to Cart'}
+      </Button>
+    );
+  }
 
-      return;
-    });
-  };
-
-  // Check if item is in cart
-  const existItem =
-    cart && cart.items.find((x) => x.productId === item.productId);
-
-  return existItem ? (
-    <div>
-      <Button type="button" variant="outline" onClick={handleRemoveFromCart}>
+  return (
+    <div className="flex items-center gap-2">
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        onClick={() => handleCartAction('remove')}
+        disabled={isPending || existingItem.qty < 1}
+      >
         {isPending ? (
           <Loader className="w-4 h-4 animate-spin" />
         ) : (
           <Minus className="w-4 h-4" />
         )}
       </Button>
-      <span className="px-2">{existItem.qty}</span>
-      <Button type="button" variant="outline" onClick={handleAddToCart}>
+      <span className="px-2">{existingItem.qty}</span>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        onClick={() => handleCartAction('add')}
+        disabled={isPending || existingItem.qty >= product.stock}
+      >
         {isPending ? (
           <Loader className="w-4 h-4 animate-spin" />
         ) : (
@@ -80,16 +85,8 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
         )}
       </Button>
     </div>
-  ) : (
-    <Button className="w-full" type="button" onClick={handleAddToCart}>
-      {isPending ? (
-        <Loader className="w-4 h-4 animate-spin" />
-      ) : (
-        <Plus className="w-4 h-4" />
-      )}{' '}
-      Add To Cart
-    </Button>
   );
+
 };
 
 export default AddToCart;

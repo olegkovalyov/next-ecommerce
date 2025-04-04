@@ -15,7 +15,18 @@ export async function getLatestProducts(): Promise<Array<Product>> {
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  return await prisma.product.findFirst({
+  const product = await prisma.product.findFirst({
     where: { slug: slug },
   });
+
+  if (!product) {
+    return null;
+  }
+
+  // Convert price to number
+  const plainProduct = convertToPlainObject(product);
+  return {
+    ...plainProduct,
+    price: Number(plainProduct.price),
+  };
 }

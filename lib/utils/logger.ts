@@ -1,17 +1,22 @@
 import winston from 'winston';
 
+const logFormat = winston.format.combine(
+  winston.format.colorize(),
+  winston.format.printf(({ level, message, ...rest }) => {
+
+    let logMessage = `[${level}] : ${message}`;
+    if (Object.keys(rest).length) {
+      logMessage += ` ${JSON.stringify(rest, null, 2)}`;
+    }
+    return logMessage;
+  }),
+);
+
 const logger = winston.createLogger({
   level: 'info',
-  format: winston.format.combine(
-    winston.format.colorize(), // Apply colors
-    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), // Add timestamp
-    winston.format.printf(({ level, message, timestamp }) => {
-      return `[${timestamp}] ${level}: ${message}`;
-    })),
+  format: logFormat,
   transports: [
-    new winston.transports.Console({
-      format: winston.format.simple(),
-    }),
+    new winston.transports.Console(),
   ],
 });
 

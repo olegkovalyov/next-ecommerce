@@ -1,17 +1,15 @@
 -- CreateTable
-CREATE TABLE "Cart" (
+CREATE TABLE "carts" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "userId" UUID,
-    "sessionCartId" TEXT NOT NULL,
+    "session_cart_id" TEXT NOT NULL,
     "items" JSON[] DEFAULT ARRAY[]::JSON[],
-    "itemsPrice" DECIMAL(12,2) NOT NULL,
-    "totalPrice" DECIMAL(12,2) NOT NULL,
-    "shippingPrice" DECIMAL(12,2) NOT NULL,
-    "taxPrice" DECIMAL(12,2) NOT NULL,
-    "createdAt" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "shipping_price" DECIMAL(12,2) NOT NULL,
+    "tax_percentage" DECIMAL(5,2) NOT NULL DEFAULT 0,
+    "created_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "Cart_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "carts_pkey" PRIMARY KEY ("id")
 );
 
 -- AddForeignKey
-ALTER TABLE "Cart" ADD CONSTRAINT "Cart_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "carts" ADD CONSTRAINT "carts_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

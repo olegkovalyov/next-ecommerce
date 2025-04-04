@@ -17,8 +17,6 @@ interface ProductActionsProps {
 }
 
 const ProductActions = ({ product, cart }: ProductActionsProps) => {
-  const cartItem = cart?.items.find(item => item.productId === product.id);
-
   return (
     <div>
       <Card>

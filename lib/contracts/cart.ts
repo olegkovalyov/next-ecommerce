@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { ProductEntity } from '@/domain/product.entity';
 
 export type CartItem = {
   productId: string;

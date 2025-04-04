@@ -5,7 +5,7 @@ import { Result, success, failure } from '@/lib/result';
 import { CartLoader } from '@/infrastructure/services/cart.loader';
 import { ServerGuestCartService } from '@/infrastructure/services/server-guest-cart.service';
 
-export async function getCart(): Promise<Result<any>> {
+export async function getCart(): Promise<Result<unknown>> {
   try {
     const session = await auth();
 

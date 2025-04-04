@@ -15,7 +15,7 @@ const CartPage = async () => {
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <h2 className="text-2xl font-bold mb-4">Your cart is empty</h2>
         <p className="text-muted-foreground mb-6">
-          Looks like you haven't added any items to your cart yet.
+          Looks like you haven&#39;t added any items to your cart yet.
         </p>
         <Button asChild>
           <Link href="/">Continue Shopping</Link>
@@ -25,7 +25,7 @@ const CartPage = async () => {
   }
 
   const cartData = cart.getCartData();
-  
+
   // Calculate cart totals
   const itemsPrice = cartData.items.reduce(
     (sum, item) => sum + item.price * item.qty,

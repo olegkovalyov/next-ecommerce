@@ -101,10 +101,8 @@ export async function updateCartItem(
     });
 
     if (quantity <= 0) {
-      console.log('remove product');
       cart.removeProduct(productId);
     } else {
-      console.log('add product');
       const addResult = cart.addProduct(productEntity, quantity);
       if (!addResult.success) {
         return failure(addResult.error);

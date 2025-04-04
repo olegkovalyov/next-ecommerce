@@ -17,9 +17,6 @@ export function formatNumberWithDecimal(num: number): string {
   return decimal ? `${int}.${decimal.padEnd(2, '0')}` : `${int}.00`;
 }
 
-function toTwoDecimalPlaces(value: number): number {
-  return parseFloat(value.toFixed(2));
-}
 
 class RedirectError extends Error {
 }
@@ -27,7 +24,7 @@ class RedirectError extends Error {
 type PrismaClientKnownRequestError = {
   code: string;
   clientVersion?: string;
-  meta?: Record<string, any>;
+  meta?: Record<string, unknown>;
   message: string;
   name: 'PrismaClientKnownRequestError';
 };

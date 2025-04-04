@@ -35,10 +35,8 @@ const ProductDetailsPage = async (props: {
   const serializedCart = cartData ? {
     id: cartData.id,
     items: cartData.items,
-    itemsPrice: 0, // These will be calculated on the client
-    totalPrice: 0,
     shippingPrice: cartData.shippingPrice,
-    taxPrice: 0,
+    taxPercentage: cartData.taxPercentage,
     sessionCartId: cartData.sessionCartId || '',
     userId: cartData.userId || undefined,
   } : null;

@@ -41,8 +41,6 @@ const AddToCart = ({ product, cart }: AddToCartProps) => {
     });
   };
 
-  console.log('Cart items: ',cart?.items);
-
   const existingItem = cart?.items.find(item => item.productId === product.id);
 
   if (!existingItem) {

@@ -17,6 +17,10 @@ export function formatNumberWithDecimal(num: number): string {
   return decimal ? `${int}.${decimal.padEnd(2, '0')}` : `${int}.00`;
 }
 
+function toTwoDecimalPlaces(value: number): number {
+  return parseFloat(value.toFixed(2));
+}
+
 class RedirectError extends Error {
 }
 

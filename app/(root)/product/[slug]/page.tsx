@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation';
 import ProductImages from '@/components/shared/product/product-images';
 import ProductDetails from '@/components/shared/product/product-details';
 import ProductActions from '@/components/shared/product/product-actions';
-import { loadCart } from '@/lib/actions/cart/load-cart.action';
+import { CartLoader } from '@/infrastructure/services/cart.loader';
+import { convertToPlainObject } from '@/lib/utils';
 
 const ProductDetailsPage = async (props: {
   params: Promise<{ slug: string }>;
@@ -15,11 +16,32 @@ const ProductDetailsPage = async (props: {
     notFound();
   }
 
-  const result = await loadCart();
-  const cart = result.success
-    ? result.value
-    : undefined;
+  const cartResult = await CartLoader.loadOrCreateCart();
+  const cart = cartResult.success ? cartResult.value : null;
 
+  // Convert product to plain object and serialize for client components
+  const plainProduct = convertToPlainObject(product);
+  const serializedProduct = {
+    id: plainProduct.id,
+    name: plainProduct.name,
+    slug: plainProduct.slug,
+    price: Number(plainProduct.price),
+    images: plainProduct.images,
+    stock: plainProduct.stock,
+  };
+
+  // Convert cart data to match expected Cart type
+  const cartData = cart?.getCartData();
+  const serializedCart = cartData ? {
+    id: cartData.id,
+    items: cartData.items,
+    itemsPrice: 0, // These will be calculated on the client
+    totalPrice: 0,
+    shippingPrice: cartData.shippingPrice,
+    taxPrice: 0,
+    sessionCartId: cartData.sessionCartId || '',
+    userId: cartData.userId || undefined,
+  } : null;
 
   return (
     <>
@@ -31,7 +53,10 @@ const ProductDetailsPage = async (props: {
           <div className="col-span-2 p-5">
             <ProductDetails product={product} />
           </div>
-          <ProductActions product={product} cart={cart} />
+          <ProductActions
+            product={serializedProduct}
+            cart={serializedCart}
+          />
         </div>
       </section>
     </>

@@ -2,20 +2,31 @@ import { Card, CardContent } from '@/components/ui/card';
 import ProductPrice from '@/components/shared/product/product-price';
 import { Badge } from '@/components/ui/badge';
 import AddToCart from '@/components/shared/product/add-to-cart';
-import { Product } from '@/lib/contracts/product';
 import { Cart } from '@/lib/contracts/cart';
 
-const ProductActions = (
-  { product, cart }: { product: Product, cart?: Cart },
-) => {
-  return (<>
+interface ProductActionsProps {
+  product: {
+    id: string;
+    name: string;
+    slug: string;
+    price: number;
+    images: string[];
+    stock: number;
+  };
+  cart: Cart | null;
+}
+
+const ProductActions = ({ product, cart }: ProductActionsProps) => {
+  const cartItem = cart?.items.find(item => item.productId === product.id);
+
+  return (
     <div>
       <Card>
         <CardContent className="p-4">
           <div className="mb-2 flex justify-between">
             <div>Price</div>
             <div>
-              <ProductPrice value={Number(product.price)} />
+              <ProductPrice value={product.price} />
             </div>
           </div>
           <div className="mb-2 flex justify-between">
@@ -29,22 +40,15 @@ const ProductActions = (
           {product.stock > 0 && (
             <div className="flex-center">
               <AddToCart
+                product={product}
                 cart={cart}
-                item={{
-                  productId: product.id,
-                  name: product.name,
-                  slug: product.slug,
-                  price: product.price,
-                  qty: 1,
-                  image: product.images![0],
-                }}
               />
             </div>
           )}
         </CardContent>
       </Card>
     </div>
-  </>);
+  );
 };
 
 export default ProductActions;

@@ -1,9 +1,10 @@
 import NextAuth from 'next-auth';
-import { PrismaAdapter } from '@auth/prisma-adapter';
-import { prisma } from '@/db/prisma';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { compareSync } from 'bcrypt-ts-edge';
 import type { NextAuthConfig } from 'next-auth';
+import { prisma } from '@/db/prisma';
+import { CartSyncService } from '@/infrastructure/services/cart-sync.service';
+import { cookies } from 'next/headers';
 
 export const config = {
   pages: {
@@ -14,7 +15,6 @@ export const config = {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       credentials: {
@@ -22,7 +22,9 @@ export const config = {
         password: { type: 'password' },
       },
       async authorize(credentials) {
-        if (credentials == null) return null;
+        if (credentials == null) {
+          return null;
+        }
 
         // Find user in database
         const user = await prisma.user.findFirst({
@@ -32,7 +34,10 @@ export const config = {
         });
 
         // Check if user exists and if the password matches
-        if (user && user.password) {
+        if (
+          user
+          && user.password
+        ) {
           const isMatch = compareSync(
             credentials.password as string,
             user.password,
@@ -54,20 +59,15 @@ export const config = {
     }),
   ],
   callbacks: {
-    async session({ session, user, trigger, token }: any) {
+    async session({ session, token }: any) {
       // Set the user ID from the token
       session.user.id = token.sub;
       session.user.role = token.role;
       session.user.name = token.name;
 
-      // If there is an update, set the user name
-      if (trigger === 'update') {
-        session.user.name = user.name;
-      }
-
       return session;
     },
-    async jwt({ token, user, trigger, session }: any) {
+    async jwt({ token, user }: any) {
       // Assign user fields to token
       if (user) {
         token.role = user.role;
@@ -84,6 +84,23 @@ export const config = {
         }
       }
       return token;
+    },
+  },
+  events: {
+    async signIn({ user, account, profile }) {
+      try {
+        const userId = String(user.id);
+        await CartSyncService.syncGuestCartToUser(userId);
+      } catch (error) {
+        console.error('Failed to sync cart:', error);
+        // Continue with the request even if sync fails
+      }
+    },
+    async signOut() {
+      const cookieStore = await cookies();
+      cookieStore.delete('guest_cart');
+      console.log('Signed out');
+      // Handle sign out
     },
   },
 } satisfies NextAuthConfig;

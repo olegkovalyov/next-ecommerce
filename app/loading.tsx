@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import loader from '@/assets/loader.gif';
 
-const LoadingPage = () => {
+const LoadingPage = (): JSX.Element => {
   return (
     <div
       style={{

@@ -3,6 +3,7 @@ import ProductPrice from '@/components/shared/product/product-price';
 import { Badge } from '@/components/ui/badge';
 import AddToCart from '@/components/shared/product/add-to-cart';
 import { Cart } from '@/lib/contracts/cart';
+import { ReactElement } from 'react';
 
 interface ProductActionsProps {
   product: {
@@ -16,7 +17,7 @@ interface ProductActionsProps {
   cart: Cart | null;
 }
 
-const ProductActions = ({ product, cart }: ProductActionsProps) => {
+const ProductActions = ({ product, cart }: ProductActionsProps): ReactElement => {
   return (
     <div>
       <Card>

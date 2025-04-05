@@ -1,6 +1,7 @@
 import { APP_NAME } from '@/lib/constants';
+import { ReactElement } from 'react';
 
-const Footer = () => {
+const Footer = (): ReactElement => {
   const currentYear = new Date().getFullYear();
 
   return (

@@ -1,12 +1,13 @@
 import Header from '@/components/shared/header';
 import Footer from '@/components/footer';
+import { ReactElement } from 'react';
 
 export default function RootLayout(
   {
     children,
   }: Readonly<{
     children: React.ReactNode;
-  }>) {
+  }>): ReactElement {
 
 
 

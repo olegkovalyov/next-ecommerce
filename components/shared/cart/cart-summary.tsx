@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { clearCart } from '@/lib/actions/cart/clear-cart.action';
 import { Button } from '@/components/ui/button';
 import { Loader } from 'lucide-react';
+import { ReactElement } from 'react';
 
 interface CartSummaryProps {
   itemsPrice: number;
@@ -20,7 +21,7 @@ export function CartSummary({
   taxPrice,
   totalPrice,
   isGuest,
-}: CartSummaryProps) {
+}: CartSummaryProps): ReactElement {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 

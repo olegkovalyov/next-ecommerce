@@ -4,8 +4,9 @@ import { CartItems } from '@/components/shared/cart/cart-items';
 import { CartSummary } from '@/components/shared/cart/cart-summary';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { ReactElement } from 'react';
 
-const CartPage = async () => {
+const CartPage = async (): Promise<ReactElement> => {
   const session = await auth();
   const cartResult = await CartLoader.loadOrCreateCart();
   const cart = cartResult.success ? cartResult.value : null;

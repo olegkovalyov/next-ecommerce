@@ -8,6 +8,7 @@ import { removeFromCart } from '@/lib/actions/cart/remove-from-cart.action';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Loader, Minus, Plus } from 'lucide-react';
+import { ReactElement } from 'react';
 
 interface CartItemsProps {
   items: Array<{
@@ -20,7 +21,7 @@ interface CartItemsProps {
   }>;
 }
 
-export function CartItems({ items }: CartItemsProps) {
+export function CartItems({ items }: CartItemsProps): ReactElement {
   const router = useRouter();
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
 

@@ -1,7 +1,8 @@
 import ProductPrice from '@/components/shared/product/product-price';
 import { Product } from '@/lib/contracts/product';
+import { ReactElement } from 'react';
 
-const ProductDetails = ({ product }: { product: Product }) => {
+const ProductDetails = ({ product }: { product: Product }): ReactElement => {
 
   return (
     <>

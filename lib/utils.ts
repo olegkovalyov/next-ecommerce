@@ -4,7 +4,7 @@ import { ZodError } from 'zod';
 
 // import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
-export function cn(...inputs: ClassValue[]) {
+export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
 
@@ -66,7 +66,7 @@ export function formatError(error: unknown): string {
   return 'An unknown error occurred';
 }
 
-export function roundNumber(value: number | string) {
+export function roundNumber(value: number | string): number {
   if (typeof value === 'number') {
     return Math.round((value + Number.EPSILON) * 100) / 100;
   } else {
@@ -82,7 +82,7 @@ const CURRENCY_FORMATTER = new Intl.NumberFormat('en-US', {
 });
 
 // Format currency using the formatter above
-export function formatCurrency(amount: number | string | null) {
+export function formatCurrency(amount: number | string | null): string {
   if (typeof amount === 'number') {
     return CURRENCY_FORMATTER.format(amount);
   } else if (typeof amount === 'string') {

@@ -2,8 +2,9 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { ReactElement } from 'react';
 
-const ProductImages = ({ images }: { images: string[] }) => {
+const ProductImages = ({ images }: { images: string[] }): ReactElement => {
   const [current, setCurrent] = useState(0);
 
   return (

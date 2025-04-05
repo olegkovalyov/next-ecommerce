@@ -5,10 +5,11 @@ import ProductDetails from '@/components/shared/product/product-details';
 import ProductActions from '@/components/shared/product/product-actions';
 import { CartLoader } from '@/infrastructure/services/cart.loader';
 import { convertToPlainObject } from '@/lib/utils';
+import { ReactElement } from 'react';
 
 const ProductDetailsPage = async (props: {
   params: Promise<{ slug: string }>;
-}) => {
+}): Promise<ReactElement> => {
   const { slug } = await props.params;
 
   const product = await getProductBySlug(slug);

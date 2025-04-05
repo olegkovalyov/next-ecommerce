@@ -19,8 +19,9 @@ import { Cart } from '@/lib/contracts/cart';
 import { formatCurrency } from '@/lib/utils';
 import { updateCartItem } from '@/lib/actions/cart/update-cart-item.action';
 import { removeFromCart } from '@/lib/actions/cart/remove-from-cart.action';
+import { ReactElement } from 'react';
 
-const CartTable = ({ cart }: { cart?: Cart }) => {
+const CartTable = ({ cart }: { cart?: Cart }): ReactElement => {
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();

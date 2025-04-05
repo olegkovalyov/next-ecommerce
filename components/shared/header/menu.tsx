@@ -10,8 +10,9 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import UserButton from './user-button';
+import { ReactElement } from 'react';
 
-const Menu = () => {
+const Menu = (): ReactElement => {
   return (
     <div className="flex justify-end gap-3">
       <nav className="hidden md:flex w-full max-w-xs gap-1">

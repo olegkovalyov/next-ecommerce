@@ -7,11 +7,18 @@ import { signInFormSchema, signUpFormSchema } from '@/lib/validators/auth.valida
 import { isRedirectError } from 'next/dist/client/components/redirect-error';
 import { formatError } from '@/lib/utils';
 
+type SignInResponse = {
+  success: boolean;
+  message: string;
+  email: string;
+  password: string;
+};
+
 // Sign in the user with credentials
 export async function signInWithCredentials(
   prevState: unknown,
   formData: FormData,
-) {
+): Promise<SignInResponse> {
   const user = signInFormSchema.parse({
     email: formData.get('email'),
     password: formData.get('password'),
@@ -40,7 +47,7 @@ export async function signInWithCredentials(
 }
 
 // Sign user out
-export async function signOutUser() {
+export async function signOutUser(): Promise<void> {
   await signOut();
 }
 

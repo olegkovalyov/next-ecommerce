@@ -3,8 +3,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import ProductPrice from '@/components/shared/product/product-price';
 import { Product } from '@/lib/contracts/product';
+import { ReactElement } from 'react';
 
-const ProductCard = ({product}: { product: Product }) => {
+const ProductCard = ({product}: { product: Product }): ReactElement => {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader className="p-0 items-center">

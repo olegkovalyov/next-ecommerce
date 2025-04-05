@@ -11,8 +11,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {useTheme} from 'next-themes';
 import {SunIcon, MoonIcon, SunMoon} from 'lucide-react';
+import { ReactElement } from 'react';
 
-const ModeToggle = () => {
+const ModeToggle = (): ReactElement | null => {
   const [mounted, setMounted] = useState(false);
   const {theme, setTheme} = useTheme();
 

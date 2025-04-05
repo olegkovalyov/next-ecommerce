@@ -1,8 +1,9 @@
 import * as React from "react"
+import { ReactElement } from "react"
 
 import { cn } from "@/lib/utils"
 
-function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+const Input = ({ className, type, ...props }: React.ComponentProps<"input">): ReactElement => {
   return (
     <input
       type={type}

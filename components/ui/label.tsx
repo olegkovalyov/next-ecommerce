@@ -2,13 +2,14 @@
 
 import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"
+import { ReactElement } from "react"
 
 import { cn } from "@/lib/utils"
 
-function Label({
+const Label = ({
   className,
   ...props
-}: React.ComponentProps<typeof LabelPrimitive.Root>) {
+}: React.ComponentProps<typeof LabelPrimitive.Root>): ReactElement => {
   return (
     <LabelPrimitive.Root
       data-slot="label"

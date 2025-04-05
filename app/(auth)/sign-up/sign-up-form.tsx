@@ -8,8 +8,9 @@ import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import { signUpUser } from '@/lib/actions/auth.actions';
+import { ReactElement } from 'react';
 
-const SignUpForm = () => {
+const SignUpForm = (): ReactElement => {
   const [data, action] = useActionState(signUpUser, {
     success: false,
     message: '',
@@ -18,7 +19,7 @@ const SignUpForm = () => {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
 
-  const SignUpButton = () => {
+  const SignUpButton = (): ReactElement => {
     const { pending } = useFormStatus();
 
     return (

@@ -1,7 +1,8 @@
 import { Product } from '@/lib/contracts/product';
 import ProductCard from '@/components/shared/product/product-card';
+import { ReactElement } from 'react';
 
-const ProductList = ({ data, title, limit }: { data: Array<Product>; title?: string; limit?: number }) => {
+const ProductList = ({ data, title, limit }: { data: Array<Product>; title?: string; limit?: number }): ReactElement => {
 
   const limitedData = limit ? data.slice(0, limit) : data;
 

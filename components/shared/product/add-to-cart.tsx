@@ -6,6 +6,7 @@ import { Cart } from '@/lib/contracts/cart';
 import { addToCart } from '@/lib/actions/cart/add-to-cart.action';
 import { removeFromCart } from '@/lib/actions/cart/remove-from-cart.action';
 import { toast } from 'sonner';
+import { ReactElement } from 'react';
 
 interface AddToCartProps {
   product: {
@@ -19,7 +20,7 @@ interface AddToCartProps {
   cart?: Cart | null;
 }
 
-const AddToCart = ({ product, cart }: AddToCartProps) => {
+const AddToCart = ({ product, cart }: AddToCartProps): ReactElement => {
   const [isPending, startTransition] = useTransition();
 
   const handleCartAction = async (action: 'add' | 'remove') => {

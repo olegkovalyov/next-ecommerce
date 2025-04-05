@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { UserIcon } from 'lucide-react';
+import { ReactElement } from 'react';
 
 declare module "next-auth" {
   interface Session {
@@ -21,7 +22,7 @@ declare module "next-auth" {
   }
 }
 
-const UserButton = async () => {
+const UserButton = async (): Promise<ReactElement> => {
   const session = await auth();
 
   if (!session) {

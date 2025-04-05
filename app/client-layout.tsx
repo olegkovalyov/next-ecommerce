@@ -8,7 +8,7 @@ export default function ClientLayout({
                                        children,
                                      }: Readonly<{
   children: React.ReactNode;
-}>) {
+}>): JSX.Element | null {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

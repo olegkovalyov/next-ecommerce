@@ -10,7 +10,7 @@ import { prisma } from '@/db/prisma';
 import { CartSyncService } from '@/infrastructure/services/cart-sync.service';
 import { cookies } from 'next/headers';
 
-export const config = {
+export const config: NextAuthConfig = {
   pages: {
     signIn: '/sign-in',
     error: '/sign-in',
@@ -64,7 +64,7 @@ export const config = {
   ],
   callbacks: {
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-    async session({ session, token }: Record<unknown, unknown>) {
+    async session({ session, token }: Record<unknown, unknown>): Promise<Record<unknown, unknown>> {
       // Set the user ID from the token
       session.user.id = token.sub;
       session.user.role = token.role;
@@ -73,14 +73,14 @@ export const config = {
       return session;
     },
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-    async jwt({ token, user }: Record<unknown, unknown>) {
+    async jwt({ token, user }: Record<unknown, unknown>): Promise<Record<unknown, unknown>> {
       // Assign user fields to token
       if (user) {
         token.role = user.role;
 
         // If user has no name then use the email
         if (user.name === '') {
-          token.name = user.email!.split('@')[0];
+          token.name = user.email.split('@')[0];
 
           // Update database to reflect the token name
           await prisma.user.update({
@@ -93,8 +93,7 @@ export const config = {
     },
   },
   events: {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
-    async signIn({ user, account, profile }: { user: any; account: any; profile?: any }) {
+    async signIn({ user }): Promise<void> {
       try {
         const userId = String(user.id);
         await CartSyncService.syncGuestCartToUser(userId);
@@ -104,7 +103,7 @@ export const config = {
         // Continue with the request even if sync fails
       }
     },
-    async signOut() {
+    async signOut(): Promise<void> {
       const cookieStore = await cookies();
       cookieStore.delete('guest_cart');
       // eslint-disable-next-line no-console
@@ -112,7 +111,6 @@ export const config = {
       // Handle sign out
     },
   },
-} satisfies NextAuthConfig;
+};
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 export const { handlers, auth, signIn, signOut } = NextAuth(config);

@@ -1,4 +1,5 @@
 import {cn} from '@/lib/utils';
+import { ReactElement } from 'react';
 
 const ProductPrice = ({
                         value,
@@ -6,7 +7,7 @@ const ProductPrice = ({
                       }: {
   value: number;
   className?: string;
-}) => {
+}): ReactElement => {
   // Ensure two decimal places
   const stringValue = value.toFixed(2);
   // Get the int/float

@@ -6,8 +6,8 @@ import { compareSync } from 'bcrypt-ts-edge';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import type { NextAuthConfig } from 'next-auth';
-import { prisma } from '@/db/prisma';
-import { CartSyncService } from '@/infrastructure/services/cart-sync.service';
+import { prisma } from '@/infrastructure/prisma/prisma';
+import { CartSyncService } from '@/application/services/cart/cart-sync.service';
 import { cookies } from 'next/headers';
 
 export const config: NextAuthConfig = {

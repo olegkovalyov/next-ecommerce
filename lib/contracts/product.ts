@@ -1,6 +1,3 @@
-import { insertProductSchema } from '@/lib/validators/product.validator';
-import { z } from 'zod';
-
 export interface Product {
   id: string;
   name: string;

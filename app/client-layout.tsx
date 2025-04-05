@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { ThemeProvider } from 'next-themes';
-import { Toaster } from '@/components/ui/toaster';
+import { Toaster } from '@/presentation/components/ui/toaster';
 
 export default function ClientLayout({
                                        children,

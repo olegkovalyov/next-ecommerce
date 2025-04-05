@@ -1,11 +1,11 @@
-import { CartService } from '@/infrastructure/services/cart.service';
+import { CartService } from '@/application/services/cart/cart.service';
 import { auth } from '@/auth';
-import { CartItems } from '@/components/shared/cart/cart-items';
-import { CartSummary } from '@/components/shared/cart/cart-summary';
-import { Button } from '@/components/ui/button';
+import { CartItems } from '@/presentation/components/shared/cart/cart-items';
+import { CartSummary } from '@/presentation/components/shared/cart/cart-summary';
+import { Button } from '@/presentation/components/ui/button';
 import Link from 'next/link';
 import { ReactElement } from 'react';
-import { ProductRepository } from '@/infrastructure/persistence/product.repository';
+import { ProductRepository } from '@/infrastructure/prisma/persistence/product.repository';
 
 const CartPage = async (): Promise<ReactElement> => {
   const session = await auth();

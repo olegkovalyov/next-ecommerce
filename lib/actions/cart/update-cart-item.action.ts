@@ -3,10 +3,10 @@
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 import { Result, success, failure } from '@/lib/result';
-import { CartService } from '@/infrastructure/services/cart.service';
-import { CartRepository } from '@/infrastructure/persistence/cart.repository';
-import { ServerGuestCartService } from '@/infrastructure/services/server-guest-cart.service';
-import { prisma } from '@/db/prisma';
+import { CartService } from '@/application/services/cart/cart.service';
+import { CartRepository } from '@/infrastructure/prisma/persistence/cart.repository';
+import { ServerGuestCartService } from '@/application/services/cart/server-guest-cart.service';
+import { prisma } from '@/infrastructure/prisma/prisma';
 import { ProductEntity } from '@/domain/product.entity';
 
 export async function updateCartItem(
@@ -48,7 +48,7 @@ export async function updateCartItem(
           description: product.description,
           category: product.category,
           brand: product.brand,
-          rating: product.rating,
+          rating: Number(product.rating),
           numReviews: product.numReviews,
           isFeatured: product.isFeatured,
           banner: product.banner,
@@ -93,7 +93,7 @@ export async function updateCartItem(
       description: product.description,
       category: product.category,
       brand: product.brand,
-      rating: product.rating,
+      rating: Number(product.rating),
       numReviews: product.numReviews,
       isFeatured: product.isFeatured,
       banner: product.banner,

@@ -1,7 +1,7 @@
 'use client';
 import {APP_NAME} from '@/lib/constants';
 import Image from 'next/image';
-import {Button} from '@/components/ui/button';
+import {Button} from '@/presentation/components/ui/button';
 import Link from 'next/link';
 
 const NotFoundPage = (): JSX.Element => {

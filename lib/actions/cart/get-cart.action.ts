@@ -2,8 +2,8 @@
 
 import { auth } from '@/auth';
 import { Result, success, failure } from '@/lib/result';
-import { CartService } from '@/infrastructure/services/cart.service';
-import { ServerGuestCartService } from '@/infrastructure/services/server-guest-cart.service';
+import { CartService } from '@/application/services/cart/cart.service';
+import { ServerGuestCartService } from '@/application/services/cart/server-guest-cart.service';
 
 export async function getCart(): Promise<Result<unknown>> {
   try {

@@ -2,7 +2,7 @@
 
 import { signIn, signOut } from '@/auth';
 import { hashSync } from 'bcrypt-ts-edge';
-import { prisma } from '@/db/prisma';
+import { prisma } from '@/infrastructure/prisma/prisma';
 import { signInFormSchema, signUpFormSchema } from '@/lib/validators/auth.validator';
 import { isRedirectError } from 'next/dist/client/components/redirect-error';
 import { formatError } from '@/lib/utils';

@@ -1,9 +1,9 @@
 import { getProductBySlug } from '@/lib/actions/product.actions';
 import { notFound } from 'next/navigation';
-import ProductImages from '@/components/shared/product/product-images';
-import ProductDetails from '@/components/shared/product/product-details';
-import ProductActions from '@/components/shared/product/product-actions';
-import { CartService } from '@/infrastructure/services/cart.service';
+import ProductImages from '@/presentation/components/shared/product/product-images';
+import ProductDetails from '@/presentation/components/shared/product/product-details';
+import ProductActions from '@/presentation/components/shared/product/product-actions';
+import { CartService } from '@/application/services/cart/cart.service';
 import { convertToPlainObject } from '@/lib/utils';
 import { ReactElement } from 'react';
 

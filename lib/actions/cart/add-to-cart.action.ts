@@ -4,9 +4,9 @@ import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 import { Result, success, failure } from '@/lib/result';
 import { ProductEntity } from '@/domain/product.entity';
-import { CartService } from '@/infrastructure/services/cart.service';
-import { CartRepository } from '@/infrastructure/persistence/cart.repository';
-import { ServerGuestCartService } from '@/infrastructure/services/server-guest-cart.service';
+import { CartService } from '@/application/services/cart/cart.service';
+import { CartRepository } from '@/infrastructure/prisma/persistence/cart.repository';
+import { ServerGuestCartService } from '@/application/services/cart/server-guest-cart.service';
 
 type ProductData = {
   id: string;
@@ -35,7 +35,7 @@ export async function addToCart(
       description: '', // Required by ProductEntity but not used in cart
       category: '', // Required by ProductEntity but not used in cart
       brand: '', // Required by ProductEntity but not used in cart
-      rating: '0', // Required by ProductEntity but not used in cart
+      rating: 0, // Required by ProductEntity but not used in cart
       numReviews: 0, // Required by ProductEntity but not used in cart
       isFeatured: false, // Required by ProductEntity but not used in cart
       banner: null, // Required by ProductEntity but not used in cart

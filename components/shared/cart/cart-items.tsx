@@ -19,9 +19,13 @@ interface CartItemsProps {
     qty: number;
     image: string;
   }>;
+  inStockQuantity: Array<{
+    productId: string;
+    inStockQuantity: number;
+  }>;
 }
 
-export function CartItems({ items }: CartItemsProps): ReactElement {
+export function CartItems({ items, inStockQuantity }: CartItemsProps): ReactElement {
   const router = useRouter();
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
 
@@ -38,6 +42,19 @@ export function CartItems({ items }: CartItemsProps): ReactElement {
     } finally {
       setLoading((prev) => ({ ...prev, [productId]: false }));
     }
+  };
+
+  const getInStockQuantity = (productId: string): number => {
+    const existingProduct = inStockQuantity.filter((product) => {
+      return product.productId === productId;
+    });
+    console.log(inStockQuantity);
+    console.log(productId);
+    console.log(existingProduct);
+    if (existingProduct.length) {
+      return existingProduct[0].inStockQuantity;
+    }
+    return 0;
   };
 
   const handleRemoveItem = async (productId: string, shouldRemoveAll: boolean = false) => {
@@ -97,7 +114,7 @@ export function CartItems({ items }: CartItemsProps): ReactElement {
                     size="icon"
                     className="font-medium text-black hover:text-indigo-500"
                     onClick={() => handleUpdateQuantity(item.productId, item.qty + 1)}
-                    disabled={loading[item.productId]}
+                    disabled={loading[item.productId] || item.qty >= getInStockQuantity(item.productId)}
                   >
                     <Plus className="w-4 h-4" />
                   </Button>

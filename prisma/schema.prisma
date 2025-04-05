@@ -37,7 +37,6 @@ model User {
   id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name          String    @default("")
   email         String    @unique
-  emailVerified DateTime? @db.Timestamp(6) @map("email_verified")
   image         String?
   password      String?
   role          String    @default("user")
@@ -45,8 +44,6 @@ model User {
   paymentMethod String?   @map("payment_method")
   createdAt     DateTime  @default(now()) @db.Timestamp(6) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
-  accounts      Account[]
-  sessions      Session[]
   carts         Cart[]
 
   @@map("users")
@@ -68,32 +65,8 @@ model Account {
   createdAt         DateTime @default(now()) @db.Timestamp(6) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   @@unique([provider, providerAccountId])
   @@map("accounts")
-}
-
-model Session {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId        String   @db.Uuid @map("user_id")
-  sessionToken  String   @unique @map("session_token")
-  expires       DateTime @db.Timestamp(6)
-  createdAt     DateTime @default(now()) @db.Timestamp(6) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("sessions")
-}
-
-model VerificationToken {
-  identifier  String
-  token       String
-  expires     DateTime
-
-  @@id([identifier, token])
-  @@map("verification_tokens")
 }
 
 model Cart {

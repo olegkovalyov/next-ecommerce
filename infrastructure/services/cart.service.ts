@@ -5,7 +5,7 @@ import { CartMapper } from '@/domain/mappers/cart.mapper';
 import { ServerGuestCartService } from './server-guest-cart.service';
 import { auth } from '@/auth';
 
-export class CartLoader {
+export class CartService {
   static async loadOrCreateCart(): Promise<Result<CartEntity | null>> {
     try {
       const session = await auth();

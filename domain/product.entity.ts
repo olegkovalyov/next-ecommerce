@@ -10,7 +10,7 @@ export interface ProductDto {
   isFeatured: boolean;
   banner: string | null;
   price: number;
-  rating: string;
+  rating: number;
   numReviews: number;
   createdAt: Date;
 }
@@ -27,7 +27,7 @@ export class ProductEntity {
   public readonly isFeatured: boolean;
   public readonly banner: string | null;
   public readonly price: number;
-  public readonly rating: string;
+  public readonly rating: number;
   public readonly numReviews: number;
   public readonly createdAt: Date;
 

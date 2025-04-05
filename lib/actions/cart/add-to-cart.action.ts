@@ -4,7 +4,7 @@ import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 import { Result, success, failure } from '@/lib/result';
 import { ProductEntity } from '@/domain/product.entity';
-import { CartLoader } from '@/infrastructure/services/cart.loader';
+import { CartService } from '@/infrastructure/services/cart.service';
 import { CartRepository } from '@/infrastructure/persistence/cart.repository';
 import { ServerGuestCartService } from '@/infrastructure/services/server-guest-cart.service';
 
@@ -52,7 +52,7 @@ export async function addToCart(
     }
 
     // Handle authenticated user cart
-    const cartResult = await CartLoader.loadOrCreateCart();
+    const cartResult = await CartService.loadOrCreateCart();
     if (!cartResult.success) {
       return failure(cartResult.error);
     }

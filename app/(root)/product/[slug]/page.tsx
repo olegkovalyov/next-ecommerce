@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import ProductImages from '@/components/shared/product/product-images';
 import ProductDetails from '@/components/shared/product/product-details';
 import ProductActions from '@/components/shared/product/product-actions';
-import { CartLoader } from '@/infrastructure/services/cart.loader';
+import { CartService } from '@/infrastructure/services/cart.service';
 import { convertToPlainObject } from '@/lib/utils';
 import { ReactElement } from 'react';
 
@@ -17,7 +17,7 @@ const ProductDetailsPage = async (props: {
     notFound();
   }
 
-  const cartResult = await CartLoader.loadOrCreateCart();
+  const cartResult = await CartService.loadOrCreateCart();
   const cart = cartResult.success ? cartResult.value : null;
 
   // Convert product to plain object and serialize for client components

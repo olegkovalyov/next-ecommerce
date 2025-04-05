@@ -1,8 +1,13 @@
 import { ProductDto } from '../product.entity';
 import { Product as PrismaProduct, Prisma } from '@prisma/client';
 
+type PrismaProductWithStrings = Omit<PrismaProduct, 'price' | 'rating'> & {
+  price: string;
+  rating: string;
+};
+
 export class ProductMapper {
-  static toDto(prismaProduct: PrismaProduct): ProductDto {
+  static toDto(prismaProduct: PrismaProductWithStrings): ProductDto {
     return {
       id: prismaProduct.id,
       name: prismaProduct.name,
@@ -15,13 +20,13 @@ export class ProductMapper {
       isFeatured: prismaProduct.isFeatured,
       banner: prismaProduct.banner,
       price: Number(prismaProduct.price),
-      rating: prismaProduct.rating.toString(),
+      rating: Number(prismaProduct.rating),
       numReviews: prismaProduct.numReviews,
       createdAt: prismaProduct.createdAt,
     };
   }
 
-  static toPrisma(productDto: ProductDto): Partial<PrismaProduct> {
+  static toPrisma(productDto: ProductDto): Omit<PrismaProduct, 'createdAt'> {
     return {
       id: productDto.id,
       name: productDto.name,
@@ -36,7 +41,6 @@ export class ProductMapper {
       price: new Prisma.Decimal(productDto.price),
       rating: new Prisma.Decimal(productDto.rating),
       numReviews: productDto.numReviews,
-      createdAt: productDto.createdAt,
     };
   }
 } 

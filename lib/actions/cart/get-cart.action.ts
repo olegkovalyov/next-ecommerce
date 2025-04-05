@@ -2,7 +2,7 @@
 
 import { auth } from '@/auth';
 import { Result, success, failure } from '@/lib/result';
-import { CartLoader } from '@/infrastructure/services/cart.loader';
+import { CartService } from '@/infrastructure/services/cart.service';
 import { ServerGuestCartService } from '@/infrastructure/services/server-guest-cart.service';
 
 export async function getCart(): Promise<Result<unknown>> {
@@ -16,7 +16,7 @@ export async function getCart(): Promise<Result<unknown>> {
     }
 
     // Handle authenticated user cart
-    const cartResult = await CartLoader.loadOrCreateCart();
+    const cartResult = await CartService.loadOrCreateCart();
     if (!cartResult.success) {
       return failure(cartResult.error);
     }

@@ -1,5 +1,5 @@
 import { GuestCartService } from './guest-cart.service';
-import { CartLoader } from './cart.loader';
+import { CartService } from './cart.service';
 import { CartRepository } from '../persistence/cart.repository';
 import { Result, success, failure } from '@/lib/result';
 import { CartItem } from '@/lib/contracts/cart';
@@ -16,7 +16,7 @@ export class CartSyncService {
       }
 
       // 2. Load or create user cart
-      const cartResult = await CartLoader.loadOrCreateCart();
+      const cartResult = await CartService.loadOrCreateCart();
       if (!cartResult.success) {
         return failure(cartResult.error);
       }
@@ -68,7 +68,7 @@ export class CartSyncService {
   static async loadUserCartToGuest(userId: string): Promise<Result<void>> {
     try {
       // 1. Get user cart
-      const cartResult = await CartLoader.loadOrCreateCart();
+      const cartResult = await CartService.loadOrCreateCart();
       if (!cartResult.success) {
         return failure(cartResult.error);
       }

@@ -3,7 +3,7 @@
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 import { Result, success, failure } from '@/lib/result';
-import { CartLoader } from '@/infrastructure/services/cart.loader';
+import { CartService } from '@/infrastructure/services/cart.service';
 import { CartRepository } from '@/infrastructure/persistence/cart.repository';
 import { ServerGuestCartService } from '@/infrastructure/services/server-guest-cart.service';
 import CartEntity from '@/domain/cart.entity';
@@ -21,7 +21,7 @@ export async function clearCart(): Promise<Result<string>> {
     }
 
     // Handle authenticated user cart
-    const cartResult = await CartLoader.loadOrCreateCart();
+    const cartResult = await CartService.loadOrCreateCart();
     if (!cartResult.success) {
       return failure(cartResult.error);
     }
@@ -50,4 +50,4 @@ export async function clearCart(): Promise<Result<string>> {
     console.error('Error clearing cart:', error);
     return failure(new Error('Failed to clear cart'));
   }
-} 
+}

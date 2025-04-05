@@ -1,5 +1,6 @@
 import { CartDto } from '../cart.entity';
 import { Cart as PrismaCart, Prisma } from '@prisma/client';
+import { CartItem } from '@/lib/contracts/cart';
 
 export class CartMapper {
   static toDto(prismaCart: PrismaCart): CartDto {
@@ -20,7 +21,7 @@ export class CartMapper {
       userId: cartDto.userId,
       shippingPrice: new Prisma.Decimal(cartDto.shippingPrice),
       taxPercentage: new Prisma.Decimal(cartDto.taxPercentage),
-      items: cartDto.items as any,
+      items: cartDto.items as CartItem[],
     };
   }
 

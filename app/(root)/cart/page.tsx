@@ -1,14 +1,15 @@
-import { CartLoader } from '@/infrastructure/services/cart.loader';
+import { CartService } from '@/infrastructure/services/cart.service';
 import { auth } from '@/auth';
 import { CartItems } from '@/components/shared/cart/cart-items';
 import { CartSummary } from '@/components/shared/cart/cart-summary';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ReactElement } from 'react';
+import { ProductRepository } from '@/infrastructure/persistence/product.repository';
 
 const CartPage = async (): Promise<ReactElement> => {
   const session = await auth();
-  const cartResult = await CartLoader.loadOrCreateCart();
+  const cartResult = await CartService.loadOrCreateCart();
   const cart = cartResult.success ? cartResult.value : null;
 
   if (!cart || cart.getCartData().items.length === 0) {
@@ -35,12 +36,28 @@ const CartPage = async (): Promise<ReactElement> => {
   const taxPrice = (itemsPrice * cartData.taxPercentage) / 100;
   const totalPrice = itemsPrice + cartData.shippingPrice + taxPrice;
 
+  const getInStockCount = async (productId: string) => {
+    const productResult = await ProductRepository.getProductById(productId);
+    if (productResult.success) {
+      return productResult.value.stock;
+    }
+    return 0;
+  };
+
+  const inStockQuantity = [];
+  for (const item of cartData.items) {
+    inStockQuantity.push({
+      productId: item.productId,
+      inStockQuantity: await getInStockCount(item.productId)
+    })
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          <CartItems items={cartData.items} />
+          <CartItems items={cartData.items} inStockQuantity={inStockQuantity} />
         </div>
         <div className="lg:col-span-1">
           <CartSummary

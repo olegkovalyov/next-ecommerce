@@ -1,8 +1,8 @@
 import { Result } from '@/lib/result';
-import { CartEntity } from '@/domain/entities/cart.entity';
 import { ProductEntity } from '@/domain/entities/product.entity';
+import { CartEntity } from '@/domain/entities/cart.entity';
 
-export interface ICartStrategy {
+export interface CartStrategyInterface {
   getCart(): Promise<Result<CartEntity>>;
 
   addItem(product: ProductEntity, quantity: number): Promise<Result<CartEntity>>;

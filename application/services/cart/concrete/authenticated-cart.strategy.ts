@@ -1,12 +1,12 @@
 import { Result, success, failure } from '@/lib/result';
-import { ICartStrategy } from './cart.strategy';
-import { ICartRepository } from '@/domain/interfaces/cart.repository';
+import { CartStrategyInterface } from '../abstract/cart.strategy';
+import { CartRepositoryInterface } from '@/application/services/cart/abstract/cart.repository';
 import { CartEntity } from '@/domain/entities/cart.entity';
 import { ProductEntity } from '@/domain/entities/product.entity';
 
-export class AuthenticatedCartStrategy implements ICartStrategy {
+export class AuthenticatedCartStrategy implements CartStrategyInterface {
   constructor(
-    private readonly cartRepository: ICartRepository,
+    private readonly cartRepository: CartRepositoryInterface,
     private readonly userId: string,
   ) {
   }

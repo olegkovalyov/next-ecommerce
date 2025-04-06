@@ -26,4 +26,8 @@ export class ProductService {
   async loadProductById(productId: string): Promise<Result<ProductEntity>> {
     return await this.productRepository.findById(productId);
   }
+
+  async loadProductBySlug(slug: string): Promise<Result<ProductEntity>> {
+    return await this.productRepository.findBySlug(slug);
+  }
 }

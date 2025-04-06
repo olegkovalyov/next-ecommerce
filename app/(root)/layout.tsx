@@ -9,8 +9,6 @@ export default function RootLayout(
     children: React.ReactNode;
   }>): ReactElement {
 
-
-
   return (
     <div className="flex h-screen flex-col">
       <Header/>

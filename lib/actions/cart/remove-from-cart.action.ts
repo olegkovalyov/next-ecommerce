@@ -1,6 +1,6 @@
 'use server';
 
-import { CartFactory } from '@/application/services/cart/cart.factory';
+import { CartFactory } from '@/application/services/cart/concrete/cart.factory';
 import { Result } from '@/lib/result';
 import { CartItemEntity } from '@/domain/entities/cart-item.entity';
 

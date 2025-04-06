@@ -1,44 +1,49 @@
-import { ICartStrategy } from '@/domain/interfaces/cart.strategy';
+import { CartStrategyInterface } from '@/application/services/cart/abstract/cart.strategy';
 import { CartEntity } from '@/domain/entities/cart.entity';
 import { ProductEntity } from '@/domain/entities/product.entity';
 import { Result, success, failure } from '@/lib/result';
-import { CartDto } from '@/domain/dtos';
+import { CartDto, CartItemDto } from '@/domain/dtos';
 import { cookies } from 'next/headers';
+import { CART_KEY } from '@/lib/constants';
+import { CookieCart } from '@/application/services/cart/abstract/cookie-cart.interface';
+import { ProductService } from '@/application/services/product/product.service';
 
-const CART_KEY = 'guest_cart';
-
-export class GuestCartStrategy implements ICartStrategy {
+export class GuestCartStrategy implements CartStrategyInterface {
   private readonly cartId: string;
 
   constructor() {
     this.cartId = crypto.randomUUID();
   }
 
-  private async getCartFromCookies(): Promise<Result<CartDto>> {
+  private async getCookieCartItems(): Promise<Result<CookieCart>> {
     try {
       const cookieStore = await cookies();
-      const cartCookie = cookieStore.get(CART_KEY);
-      
-      if (!cartCookie) {
-        return success({
-          id: this.cartId,
-          userId: null,
-          shippingPrice: 0,
-          taxPercentage: 0,
-          cartItemDtos: [],
-        });
+      const cookieCartItems = cookieStore.get(CART_KEY);
+      if (!cookieCartItems) {
+        return failure(new Error('Failed to get cart from cookies'));
       }
 
-      return success(JSON.parse(cartCookie.value));
+      return success(JSON.parse(cookieCartItems.value));
     } catch (error) {
       return failure(new Error('Failed to get cart from cookies'));
     }
   }
 
-  private async saveCartToCookies(cart: CartDto): Promise<Result<void>> {
+  private async saveCartItemsToCookies(cart: CartDto): Promise<Result<void>> {
     try {
+      const cartItemsInCookie = cart.cartItemDtos.map(item => {
+        return {
+          id: item.id,
+          productId: item.productId,
+          quantity: item.quantity,
+        };
+      });
+      const cookieCart: CookieCart = {
+        id: cart.id,
+        cartItems: cartItemsInCookie,
+      };
       const cookieStore = await cookies();
-      cookieStore.set(CART_KEY, JSON.stringify(cart), {
+      cookieStore.set(CART_KEY, JSON.stringify(cookieCart), {
         path: '/',
         maxAge: 60 * 60 * 24 * 7, // 7 days
         sameSite: 'lax',
@@ -51,12 +56,40 @@ export class GuestCartStrategy implements ICartStrategy {
 
   async getCart(): Promise<Result<CartEntity>> {
     try {
-      const cartResult = await this.getCartFromCookies();
-      if (!cartResult.success) {
-        return failure(cartResult.error);
+      const cookieCartItemsResult = await this.getCookieCartItems();
+      const cartItemDtos = [];
+      if (cookieCartItemsResult.success) {
+        const cookieCartItems = cookieCartItemsResult.value;
+        const productService = new ProductService();
+        for (const item of cookieCartItems.cartItems) {
+          const productResult = await productService.loadProductById(item.productId);
+          if (!productResult.success) {
+            continue;
+          }
+          const product = productResult.value;
+          const cartItemDto = new CartItemDto(
+            item.id,
+            cookieCartItems.id,
+            item.productId,
+            item.quantity,
+            product.toDto(),
+          );
+          cartItemDtos.push(cartItemDto);
+        }
       }
 
-      return CartEntity.fromDto(cartResult.value);
+      const cartId = cookieCartItemsResult.success
+        ? cookieCartItemsResult.value.id
+        : crypto.randomUUID();
+
+      const cartDto = new CartDto(
+        cartId,
+        '',
+        0,
+        0,
+        cartItemDtos,
+      );
+      return CartEntity.fromDto(cartDto);
     } catch (error) {
       return failure(new Error('Failed to get cart'));
     }
@@ -75,7 +108,7 @@ export class GuestCartStrategy implements ICartStrategy {
         return failure(addResult.error);
       }
 
-      const saveResult = await this.saveCartToCookies(cart.toDto());
+      const saveResult = await this.saveCartItemsToCookies(cart.toDto());
       if (!saveResult.success) {
         return failure(saveResult.error);
       }
@@ -99,7 +132,7 @@ export class GuestCartStrategy implements ICartStrategy {
         return failure(removeResult.error);
       }
 
-      const saveResult = await this.saveCartToCookies(cart.toDto());
+      const saveResult = await this.saveCartItemsToCookies(cart.toDto());
       if (!saveResult.success) {
         return failure(saveResult.error);
       }
@@ -133,7 +166,7 @@ export class GuestCartStrategy implements ICartStrategy {
         return failure(addResult.error);
       }
 
-      const saveResult = await this.saveCartToCookies(cart.toDto());
+      const saveResult = await this.saveCartItemsToCookies(cart.toDto());
       if (!saveResult.success) {
         return failure(saveResult.error);
       }
@@ -154,7 +187,7 @@ export class GuestCartStrategy implements ICartStrategy {
       const cart = cartResult.value;
       cart.cartItems.clear();
 
-      const saveResult = await this.saveCartToCookies(cart.toDto());
+      const saveResult = await this.saveCartItemsToCookies(cart.toDto());
       if (!saveResult.success) {
         return failure(saveResult.error);
       }

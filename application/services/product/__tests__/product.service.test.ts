@@ -183,4 +183,38 @@ describe('ProductService', () => {
       }
     });
   });
+
+  describe('loadProductBySlug', () => {
+    it('should load a product successfully by slug', async () => {
+      if (!mockProductEntity.success) {
+        throw new Error('Failed to create mock product entity');
+      }
+
+      mockProductRepository.findBySlug.mockResolvedValue(mockProductEntity);
+
+      const result = await productService.loadProductBySlug('test-product');
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.value.id).toBe('product-id');
+        expect(result.value.name).toBe('Test Product');
+        expect(result.value.slug).toBe('test-product');
+      }
+      expect(mockProductRepository.findBySlug).toHaveBeenCalledWith('test-product');
+    });
+
+    it('should return failure when product not found by slug', async () => {
+      mockProductRepository.findBySlug.mockResolvedValue({
+        success: false,
+        error: new Error('Product not found'),
+      });
+
+      const result = await productService.loadProductBySlug('non-existent-slug');
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.message).toBe('Product not found');
+      }
+    });
+  });
 });

@@ -3,19 +3,25 @@ import ProductPrice from '@/presentation/components/shared/product/product-price
 import { Badge } from '@/presentation/components/ui/badge';
 import { AddToCart } from '@/presentation/components/shared/product/add-to-cart';
 import { ReactElement } from 'react';
-import { ProductDto } from '@/domain/entities/product.entity';
-import { CartFactory } from '@/application/services/cart/cart.factory';
-import { CartService } from '@/application/services/cart/cart.service';
+import { CartFactory } from '@/application/services/cart/concrete/cart.factory';
+import { ProductDto } from '@/domain/dtos';
+import { notFound } from 'next/navigation';
 
 interface ProductActionsProps {
   productDto: ProductDto;
 }
 
 const ProductActions = async ({ productDto }: ProductActionsProps): Promise<ReactElement> => {
+
   const strategy = await CartFactory.createCartStrategy();
-  const cartResult = await strategy.getCart();
-  const cart = cartResult.success ? cartResult.value : CartService.createCart();
-  const cartDto = cart.getCartDto();
+  const getCartResult = await strategy.getCart();
+  if (!getCartResult.success) {
+    console.log('not found2');
+    console.log(getCartResult.error.message)
+    return notFound();
+  }
+
+  const cartDto = getCartResult.value.toDto();
 
   return (
     <div>

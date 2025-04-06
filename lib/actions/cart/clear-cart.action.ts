@@ -1,6 +1,6 @@
 'use server';
 
-import { CartFactory } from '@/application/services/cart/cart.factory';
+import { CartFactory } from '@/application/services/cart/concrete/cart.factory';
 import { Result } from '@/lib/result';
 
 export async function clearCart(): Promise<Result<void>> {

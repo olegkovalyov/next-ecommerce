@@ -4,10 +4,9 @@ import { useTransition } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/presentation/components/ui/button';
 import { Plus, Minus, Loader } from 'lucide-react';
-import { ProductDto } from '@/domain/entities/product.entity';
-import { CartDto } from '@/domain/entities/cart.entity';
 import { addToCart } from '@/lib/actions/cart/add-to-cart.action';
 import { removeFromCart } from '@/lib/actions/cart/remove-from-cart.action';
+import { CartDto, ProductDto } from '@/domain/dtos';
 
 type CartAction = 'add' | 'remove';
 
@@ -19,7 +18,7 @@ interface AddToCartProps {
 export function AddToCart({ productDto, cartDto }: AddToCartProps) {
   const [isPending, startTransition] = useTransition();
 
-  const existingItem = cartDto?.items.find((item: { productId: string }) => item.productId === productDto.id);
+  const existingItem = cartDto.cartItemDtos.find((item: { productId: string }) => item.productId === productDto.id);
 
   const handleCartAction = async (action: CartAction) => {
     startTransition(async () => {

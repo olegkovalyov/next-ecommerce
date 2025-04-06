@@ -1,7 +1,7 @@
 import { Result } from '@/lib/result';
-import { CartEntity } from '../entities/cart.entity';
+import { CartEntity } from '@/domain/entities/cart.entity';
 
-export interface ICartRepository {
+export interface CartRepositoryInterface {
   findByUserId(userId: string): Promise<Result<CartEntity>>;
 
   save(cart: CartEntity): Promise<Result<CartEntity>>;

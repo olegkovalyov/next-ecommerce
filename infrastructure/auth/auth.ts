@@ -8,7 +8,7 @@ import { compareSync } from 'bcrypt-ts-edge';
 import type { NextAuthConfig } from 'next-auth';
 import { prisma } from '@/infrastructure/prisma/prisma';
 import { cookies } from 'next/headers';
-import { CartSyncService } from '@/application/services/cart/cart.sync.service';
+import { CartSyncService } from '@/application/services/cart/concrete/cart-sync.service';
 
 export const config: NextAuthConfig = {
   pages: {

@@ -1,13 +1,13 @@
 import { Result, success, failure } from '@/lib/result';
-import { ICartStrategy } from '@/domain/interfaces/cart.strategy';
+import { CartStrategyInterface } from '@/application/services/cart/abstract/cart.strategy';
 import { CartFactory } from './cart.factory';
 import { CartEntity } from '@/domain/entities/cart.entity';
 
 export class CartSyncService {
-  private guestStrategy: ICartStrategy;
-  private userStrategy: ICartStrategy;
+  private guestStrategy: CartStrategyInterface;
+  private userStrategy: CartStrategyInterface;
 
-  private constructor(guestStrategy: ICartStrategy, userStrategy: ICartStrategy) {
+  private constructor(guestStrategy: CartStrategyInterface, userStrategy: CartStrategyInterface) {
     this.guestStrategy = guestStrategy;
     this.userStrategy = userStrategy;
   }

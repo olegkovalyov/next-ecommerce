@@ -2,7 +2,7 @@
 
 import { auth } from '@/infrastructure/auth/auth';
 import { Result } from '@/lib/result';
-import { CartFactory } from '@/application/services/cart/cart.factory';
+import { CartFactory } from '@/application/services/cart/concrete/cart.factory';
 import { CartItemEntity } from '@/domain/entities/cart-item.entity';
 
 type CartData = {

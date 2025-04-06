@@ -116,11 +116,19 @@ export class CartEntity {
       return failure(new Error(`Not enough stock available. Only ${product.stock} items left.`));
     }
 
+    let currentQuantity = 0;
+    this.toDto().cartItemDtos.forEach(item => {
+      if (item.productId === product.id) {
+        currentQuantity += item.quantity;
+      }
+    });
+
+    const newQuantity = currentQuantity + quantity;
     const cartItemResult = CartItemEntity.fromDto({
       id: crypto.randomUUID(),
       cartId: this.id,
       productId: product.id,
-      quantity,
+      quantity: newQuantity,
       productDto: product.toDto(),
     });
 

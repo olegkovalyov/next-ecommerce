@@ -29,31 +29,6 @@ export class GuestCartStrategy implements CartStrategyInterface {
     }
   }
 
-  private async saveCartItemsToCookies(cart: CartDto): Promise<Result<void>> {
-    try {
-      const cartItemsInCookie = cart.cartItemDtos.map(item => {
-        return {
-          id: item.id,
-          productId: item.productId,
-          quantity: item.quantity,
-        };
-      });
-      const cookieCart: CookieCart = {
-        id: cart.id,
-        cartItems: cartItemsInCookie,
-      };
-      const cookieStore = await cookies();
-      cookieStore.set(CART_KEY, JSON.stringify(cookieCart), {
-        path: '/',
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-        sameSite: 'lax',
-      });
-      return success(undefined);
-    } catch (error) {
-      return failure(new Error('Failed to save cart to cookies'));
-    }
-  }
-
   async getCart(): Promise<Result<CartEntity>> {
     try {
       const cookieCartItemsResult = await this.getCookieCartItems();
@@ -108,12 +83,7 @@ export class GuestCartStrategy implements CartStrategyInterface {
         return failure(addResult.error);
       }
 
-      const saveResult = await this.saveCartItemsToCookies(cart.toDto());
-      if (!saveResult.success) {
-        return failure(saveResult.error);
-      }
-
-      return success(cart);
+      return success(addResult.value);
     } catch (error) {
       return failure(new Error('Failed to add item to cart'));
     }
@@ -130,11 +100,6 @@ export class GuestCartStrategy implements CartStrategyInterface {
       const removeResult = cart.removeProduct(productId, quantity);
       if (!removeResult.success) {
         return failure(removeResult.error);
-      }
-
-      const saveResult = await this.saveCartItemsToCookies(cart.toDto());
-      if (!saveResult.success) {
-        return failure(saveResult.error);
       }
 
       return success(cart);
@@ -166,11 +131,6 @@ export class GuestCartStrategy implements CartStrategyInterface {
         return failure(addResult.error);
       }
 
-      const saveResult = await this.saveCartItemsToCookies(cart.toDto());
-      if (!saveResult.success) {
-        return failure(saveResult.error);
-      }
-
       return success(cart);
     } catch (error) {
       return failure(new Error('Failed to update cart item'));
@@ -186,11 +146,6 @@ export class GuestCartStrategy implements CartStrategyInterface {
 
       const cart = cartResult.value;
       cart.cartItems.clear();
-
-      const saveResult = await this.saveCartItemsToCookies(cart.toDto());
-      if (!saveResult.success) {
-        return failure(saveResult.error);
-      }
 
       return success(cart);
     } catch (error) {

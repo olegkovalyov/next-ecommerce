@@ -1,12 +1,13 @@
 'use client';
 
 import { useTransition } from 'react';
-import { toast } from 'sonner';
 import { Button } from '@/presentation/components/ui/button';
 import { Plus, Minus, Loader } from 'lucide-react';
 import { addToCart } from '@/lib/actions/cart/add-to-cart.action';
 import { removeFromCart } from '@/lib/actions/cart/remove-from-cart.action';
 import { CartDto, ProductDto } from '@/domain/dtos';
+import { toast } from 'sonner';
+import { useCartStore } from '@/store/cart.store';
 
 type CartAction = 'add' | 'remove';
 
@@ -17,7 +18,9 @@ interface AddToCartProps {
 
 export function AddToCart({ productDto, cartDto }: AddToCartProps) {
   const [isPending, startTransition] = useTransition();
+  const { setCart, getCart } = useCartStore();
 
+  // clearCart();
   const existingItem = cartDto.cartItemDtos.find((item: { productId: string }) => item.productId === productDto.id);
 
   const handleCartAction = async (action: CartAction) => {
@@ -34,6 +37,10 @@ export function AddToCart({ productDto, cartDto }: AddToCartProps) {
           toast.error(result.error.message);
           return;
         }
+
+        // Update Zustand store with the new cart state
+        setCart(result.value);
+        console.log(result.value);
 
         const successMessage = action === 'add'
           ? 'Product added to cart'

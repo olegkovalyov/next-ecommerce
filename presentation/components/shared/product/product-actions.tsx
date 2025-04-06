@@ -1,27 +1,22 @@
+'use client';
+
 import { Card, CardContent } from '@/presentation/components/ui/card';
 import ProductPrice from '@/presentation/components/shared/product/product-price';
 import { Badge } from '@/presentation/components/ui/badge';
 import { AddToCart } from '@/presentation/components/shared/product/add-to-cart';
-import { ReactElement } from 'react';
-import { CartFactory } from '@/application/services/cart/concrete/cart.factory';
-import { ProductDto } from '@/domain/dtos';
-import { notFound } from 'next/navigation';
+import { CartDto, ProductDto } from '@/domain/dtos';
+import { useCartStore } from '@/store/cart.store';
+import { router } from 'next/client';
 
 interface ProductActionsProps {
   productDto: ProductDto;
 }
 
-const ProductActions = async ({ productDto }: ProductActionsProps): Promise<ReactElement> => {
+const ProductActions = ({ productDto }: ProductActionsProps) => {
 
-  const strategy = await CartFactory.createCartStrategy();
-  const getCartResult = await strategy.getCart();
-  if (!getCartResult.success) {
-    console.log('not found2');
-    console.log(getCartResult.error.message)
-    return notFound();
-  }
+  const { getCart } = useCartStore();
 
-  const cartDto = getCartResult.value.toDto();
+  const cartDto = getCart() as CartDto;
 
   return (
     <div>

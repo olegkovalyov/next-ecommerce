@@ -104,6 +104,8 @@ export class CartEntity {
   }
 
   addProduct(product: ProductEntity, quantity: number = 1): Result<CartEntity> {
+    console.log('add: ', quantity);
+
     if (!product.id) {
       return failure(new Error('Product must have an ID'));
     }
@@ -124,6 +126,11 @@ export class CartEntity {
     });
 
     const newQuantity = currentQuantity + quantity;
+
+    if (product.stock < newQuantity) {
+      return failure(new Error(`Not enough stock available. Only ${product.stock} items left.`));
+    }
+
     const cartItemResult = CartItemEntity.fromDto({
       id: crypto.randomUUID(),
       cartId: this.id,

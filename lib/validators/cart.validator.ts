@@ -2,20 +2,20 @@ import { z } from 'zod';
 import { currency } from '@/lib/validators/common';
 
 export const cartItemSchema = z.object({
-  productId: z.string().min(1, 'Product is required'),
-  name: z.string().min(1, 'Name is required'),
-  slug: z.string().min(1, 'Slug is required'),
-  qty: z.number().int().nonnegative('Quantity must be a positive number'),
-  image: z.string().min(1, 'Image is required'),
-  price: currency,
+  id: z.string().min(1, 'Cart item id is required'),
+  cartId: z.string().min(1, 'Cart id is required'),
+  productId: z.string().min(1, 'Product id is required'),
+  quantity: z.number().min(1, 'Quantity must be at least 1'),
+  product: z.any(),
 });
 
-export const insertCartSchema = z.object({
+export const cartSchema = z.object({
+  id: z.string().min(1, 'Cart id is required'),
+  userId: z.string().nullable(),
+  shippingPrice: z.number().min(0, 'Shipping price must be at least 0'),
+  taxPercentage: z.number().min(0, 'Tax percentage must be at least 0'),
   items: z.array(cartItemSchema),
-  itemsPrice: currency,
-  totalPrice: currency,
-  shippingPrice: currency,
-  taxPrice: currency,
-  sessionCartId: z.string().min(1, 'Session cart id is required'),
-  userId: z.string().optional().nullable(),
 });
+
+export type CartItem = z.infer<typeof cartItemSchema>;
+export type Cart = z.infer<typeof cartSchema>;

@@ -7,8 +7,8 @@ import { compareSync } from 'bcrypt-ts-edge';
 // @ts-expect-error
 import type { NextAuthConfig } from 'next-auth';
 import { prisma } from '@/infrastructure/prisma/prisma';
-import { CartSyncService } from '@/application/services/cart/cart-sync.service';
 import { cookies } from 'next/headers';
+import { CartSyncService } from '@/application/services/cart/cart.sync.service';
 
 export const config: NextAuthConfig = {
   pages: {
@@ -96,7 +96,7 @@ export const config: NextAuthConfig = {
     async signIn({ user }): Promise<void> {
       try {
         const userId = String(user.id);
-        await CartSyncService.syncGuestCartToUser(userId);
+        await (await CartSyncService.create(userId)).syncGuestCartToUser();
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Failed to sync cart:', error);

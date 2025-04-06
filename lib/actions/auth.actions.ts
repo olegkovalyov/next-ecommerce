@@ -1,6 +1,6 @@
 'use server';
 
-import { signIn, signOut } from '@/auth';
+import { signIn, signOut } from '@/infrastructure/auth/auth';
 import { hashSync } from 'bcrypt-ts-edge';
 import { prisma } from '@/infrastructure/prisma/prisma';
 import { signInFormSchema, signUpFormSchema } from '@/lib/validators/auth.validator';

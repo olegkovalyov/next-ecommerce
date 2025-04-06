@@ -1,4 +1,4 @@
-import { ProductEntity } from '@/domain/product.entity';
+import { ProductEntity } from '@/domain/entities/product.entity';
 import { prisma } from '@/infrastructure/prisma/prisma';
 import { failure, Result, success } from '@/lib/result';
 import { formatError } from '@/lib/utils';

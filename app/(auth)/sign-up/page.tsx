@@ -9,7 +9,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { APP_NAME } from '@/lib/constants';
-import { auth } from '@/auth';
+import { auth } from '@/infrastructure/auth/auth';
 import { redirect } from 'next/navigation';
 import SignUpForm from './sign-up-form';
 import { ReactElement } from 'react';

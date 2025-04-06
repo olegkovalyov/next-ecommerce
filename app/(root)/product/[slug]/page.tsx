@@ -1,49 +1,51 @@
-import { getProductBySlug } from '@/lib/actions/product.actions';
 import { notFound } from 'next/navigation';
-import ProductImages from '@/presentation/components/shared/product/product-images';
-import ProductDetails from '@/presentation/components/shared/product/product-details';
-import ProductActions from '@/presentation/components/shared/product/product-actions';
+import { ProductService } from '@/application/services/product/product.service';
 import { CartService } from '@/application/services/cart/cart.service';
-import { convertToPlainObject } from '@/lib/utils';
-import { ReactElement } from 'react';
+import CartEntity from '@/domain/entities/cart.entity';
+import { Cart } from '@/lib/contracts/cart';
+import { auth } from '@/infrastructure/auth/auth';
+import ProductDetails from '@/presentation/components/shared/product/product-details';
+import ProductImages from '@/presentation/components/shared/product/product-images';
+import ProductActions from '@/presentation/components/shared/product/product-actions';
+import { ProductDto } from '@/domain/entities/product.entity';
 
-const ProductDetailsPage = async (props: {
+interface ProductPageProps {
   params: Promise<{ slug: string }>;
-}): Promise<ReactElement> => {
-  const { slug } = await props.params;
+}
 
-  const product = await getProductBySlug(slug);
-  if (!product) {
-    notFound();
-  }
+export default async function ProductPage({
+  params,
+}: ProductPageProps) {
+  try {
+    const { slug } = await params;
+    const productResult = await ProductService.getProductBySlug(slug);
+    if (!productResult.success) {
+      return notFound();
+    }
 
-  const cartResult = await CartService.loadOrCreateCart();
-  const cart = cartResult.success ? cartResult.value : null;
+    const product = productResult.value;
+    if (!product) {
+      return notFound();
+    }
+    // Convert product to plain object and serialize for client components
+    const productDto: ProductDto = {
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      category: product.category,
+      images: product.images,
+      brand: product.brand,
+      description: product.description,
+      stock: product.stock,
+      price: product.price,
+      rating: product.rating,
+      numReviews: product.numReviews,
+      isFeatured: product.isFeatured,
+      banner: product.banner,
+      createdAt: product.createdAt
+    };
 
-  // Convert product to plain object and serialize for client components
-  const plainProduct = convertToPlainObject(product);
-  const serializedProduct = {
-    id: plainProduct.id,
-    name: plainProduct.name,
-    slug: plainProduct.slug,
-    price: Number(plainProduct.price),
-    images: plainProduct.images,
-    stock: plainProduct.stock,
-  };
-
-  // Convert cart data to match expected Cart type
-  const cartData = cart?.getCartData();
-  const serializedCart = cartData ? {
-    id: cartData.id,
-    items: cartData.items,
-    shippingPrice: cartData.shippingPrice,
-    taxPercentage: cartData.taxPercentage,
-    sessionCartId: cartData.sessionCartId || '',
-    userId: cartData.userId || undefined,
-  } : null;
-
-  return (
-    <>
+    return (
       <section>
         <div className="grid grid-cols-1 md:grid-cols-5">
           <div className="col-span-2">
@@ -53,13 +55,13 @@ const ProductDetailsPage = async (props: {
             <ProductDetails product={product} />
           </div>
           <ProductActions
-            product={serializedProduct}
-            cart={serializedCart}
+            productDto={productDto}
           />
         </div>
       </section>
-    </>
-  );
-};
-
-export default ProductDetailsPage;
+    );
+  } catch (error) {
+    console.error('Error loading product:', error);
+    return notFound();
+  }
+}

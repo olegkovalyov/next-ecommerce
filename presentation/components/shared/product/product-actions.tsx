@@ -1,23 +1,22 @@
 import { Card, CardContent } from '@/presentation/components/ui/card';
 import ProductPrice from '@/presentation/components/shared/product/product-price';
 import { Badge } from '@/presentation/components/ui/badge';
-import AddToCart from '@/presentation/components/shared/product/add-to-cart';
-import { Cart } from '@/lib/contracts/cart';
+import { AddToCart } from '@/presentation/components/shared/product/add-to-cart';
 import { ReactElement } from 'react';
+import { ProductDto } from '@/domain/entities/product.entity';
+import { CartFactory } from '@/application/services/cart/cart.factory';
+import { CartService } from '@/application/services/cart/cart.service';
 
 interface ProductActionsProps {
-  product: {
-    id: string;
-    name: string;
-    slug: string;
-    price: number;
-    images: string[];
-    stock: number;
-  };
-  cart: Cart | null;
+  productDto: ProductDto;
 }
 
-const ProductActions = ({ product, cart }: ProductActionsProps): ReactElement => {
+const ProductActions = async ({ productDto }: ProductActionsProps): Promise<ReactElement> => {
+  const strategy = await CartFactory.createCartStrategy();
+  const cartResult = await strategy.getCart();
+  const cart = cartResult.success ? cartResult.value : CartService.createCart();
+  const cartDto = cart.getCartDto();
+
   return (
     <div>
       <Card>
@@ -25,23 +24,20 @@ const ProductActions = ({ product, cart }: ProductActionsProps): ReactElement =>
           <div className="mb-2 flex justify-between">
             <div>Price</div>
             <div>
-              <ProductPrice value={product.price} />
+              <ProductPrice value={productDto.price} />
             </div>
           </div>
           <div className="mb-2 flex justify-between">
             <div>Status</div>
-            {product.stock > 0 ? (
+            {productDto.stock > 0 ? (
               <Badge variant="outline">In Stock</Badge>
             ) : (
               <Badge variant="destructive">Out Of Stock</Badge>
             )}
           </div>
-          {product.stock > 0 && (
+          {productDto.stock > 0 && (
             <div className="flex-center">
-              <AddToCart
-                product={product}
-                cart={cart}
-              />
+              <AddToCart productDto={productDto} cartDto={cartDto} />
             </div>
           )}
         </CardContent>

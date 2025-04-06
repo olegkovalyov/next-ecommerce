@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { auth } from '@/auth';
+import { auth } from '@/infrastructure/auth/auth';
 import { signOutUser } from '@/lib/actions/auth.actions';
 import { Button } from '@/presentation/components/ui/button';
 import {

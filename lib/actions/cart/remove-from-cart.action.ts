@@ -1,48 +1,105 @@
 'use server';
 
-import { auth } from '@/auth';
-import { revalidatePath } from 'next/cache';
-import { Result, success, failure } from '@/lib/result';
-import { CartService } from '@/application/services/cart/cart.service';
-import { CartRepository } from '@/infrastructure/prisma/persistence/cart.repository';
-import { ServerGuestCartService } from '@/application/services/cart/server-guest-cart.service';
+import { CartFactory } from '@/application/services/cart/cart.factory';
+import { Result } from '@/lib/result';
+import { CartItemEntity } from '@/domain/entities/cart-item.entity';
 
-export async function removeFromCart(
-  productId: string,
-  shouldRemoveAll: boolean = false
-): Promise<Result<string>> {
+type CartData = {
+  id: string;
+  userId: string | null;
+  items: Array<{
+    id: string;
+    cartId: string;
+    productId: string;
+    quantity: number;
+    qty: number;
+    product: {
+      id: string;
+      name: string;
+      slug: string;
+      price: number;
+      images: string[];
+      stock: number;
+    };
+  }>;
+  shippingPrice: number;
+  taxPercentage: number;
+};
+
+export async function removeFromCart(productId: string, quantity: number = 1): Promise<Result<CartData>> {
   try {
-    const session = await auth();
+    const strategy = await CartFactory.createCartStrategy();
+    const cartResult = await strategy.getCart();
 
-    if (!session?.user?.id) {
-      // Handle guest cart
-      await ServerGuestCartService.removeItem(productId, shouldRemoveAll);
-      revalidatePath('/cart');
-      return success('Item removed from cart');
-    }
-
-    // Handle authenticated user cart
-    const cartResult = await CartService.loadOrCreateCart();
     if (!cartResult.success) {
-      return failure(cartResult.error);
+      return { success: false, error: cartResult.error };
     }
 
     const cart = cartResult.value;
     if (!cart) {
-      return failure(new Error('Cart not found'));
+      return {
+        success: true,
+        value: {
+          id: crypto.randomUUID(),
+          userId: null,
+          items: [],
+          shippingPrice: 0,
+          taxPercentage: 0,
+        }
+      };
     }
 
-    cart.removeProduct(productId);
-
-    const saveResult = await CartRepository.saveCart(cart);
-    if (!saveResult.success) {
-      return failure(saveResult.error);
+    const removeResult = await strategy.removeItem(productId, quantity);
+    if (!removeResult.success) {
+      return { success: false, error: removeResult.error };
     }
 
-    revalidatePath('/cart');
-    return success('Item removed from cart');
+    const updatedCart = removeResult.value;
+    if (!updatedCart) {
+      return {
+        success: true,
+        value: {
+          id: crypto.randomUUID(),
+          userId: null,
+          items: [],
+          shippingPrice: 0,
+          taxPercentage: 0,
+        }
+      };
+    }
+
+    // Convert Map to array and ensure all data is serializable
+    const items = Array.from(updatedCart.items.entries()).map((entry) => {
+      const [productId, item] = entry as [string, CartItemEntity];
+      return {
+        id: item.id,
+        cartId: item.cartId,
+        productId,
+        quantity: item.quantity,
+        qty: item.quantity, // For backward compatibility
+        product: {
+          id: item.product.id,
+          name: item.product.name,
+          slug: item.product.slug,
+          price: item.product.price,
+          images: item.product.images,
+          stock: item.product.stock,
+        },
+      };
+    });
+
+    return {
+      success: true,
+      value: {
+        id: updatedCart.id,
+        userId: updatedCart.userId,
+        items,
+        shippingPrice: updatedCart.shippingPrice,
+        taxPercentage: updatedCart.taxPercentage,
+      }
+    };
   } catch (error) {
     console.error('Error removing from cart:', error);
-    return failure(new Error('Failed to remove item from cart'));
+    return { success: false, error: new Error('Failed to remove from cart') };
   }
 }

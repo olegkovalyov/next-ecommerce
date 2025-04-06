@@ -1,28 +1,27 @@
 import { z } from 'zod';
 
-export type CartItem = {
-  productId: string;
-  name: string;
-  slug: string;
-  price: number;
-  qty: number;
-  image: string;
-};
-
-export const insertCartSchema = z.object({
+const cartItemSchema = z.object({
   id: z.string(),
-  sessionCartId: z.string().optional(),
-  userId: z.string().optional(),
-  shippingPrice: z.number(),
-  taxPercentage: z.number(),
-  items: z.array(z.object({
-    productId: z.string(),
+  cartId: z.string(),
+  productId: z.string(),
+  quantity: z.number(),
+  qty: z.number(), // For backward compatibility
+  product: z.object({
+    id: z.string(),
     name: z.string(),
     slug: z.string(),
     price: z.number(),
-    qty: z.number().min(1),
-    image: z.string(),
-  })),
+    images: z.array(z.string()),
+    stock: z.number(),
+  }),
 });
 
-export type Cart = z.infer<typeof insertCartSchema>;
+export const cartSchema = z.object({
+  id: z.string(),
+  userId: z.string().nullable(),
+  items: z.array(cartItemSchema),
+  shippingPrice: z.number().min(0),
+  taxPercentage: z.number().min(0),
+});
+
+export type Cart = z.infer<typeof cartSchema>;

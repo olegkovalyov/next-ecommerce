@@ -1,84 +1,108 @@
 'use server';
 
-import { auth } from '@/auth';
-import { revalidatePath } from 'next/cache';
-import { Result, success, failure } from '@/lib/result';
-import { ProductEntity } from '@/domain/product.entity';
-import { CartService } from '@/application/services/cart/cart.service';
-import { CartRepository } from '@/infrastructure/prisma/persistence/cart.repository';
-import { ServerGuestCartService } from '@/application/services/cart/server-guest-cart.service';
+import { CartFactory } from '@/application/services/cart/cart.factory';
+import { Result } from '@/lib/result';
+import { ProductDto, ProductEntity } from '@/domain/entities/product.entity';
+import { CartItemEntity } from '@/domain/entities/cart-item.entity';
 
-type ProductData = {
+type CartData = {
   id: string;
-  name: string;
-  slug: string;
-  price: number;
-  images: string[];
-  stock: number;
+  userId: string | null;
+  items: Array<{
+    id: string;
+    cartId: string;
+    productId: string;
+    quantity: number;
+    qty: number;
+    product: {
+      id: string;
+      name: string;
+      slug: string;
+      price: number;
+      images: string[];
+      stock: number;
+    };
+  }>;
+  shippingPrice: number;
+  taxPercentage: number;
 };
 
-export async function addToCart(
-  productData: ProductData,
-  quantity: number = 1,
-): Promise<Result<string>> {
+export async function addToCart(productDto: ProductDto, quantity: number = 1): Promise<Result<CartData>> {
   try {
-    const session = await auth();
+    const strategy = await CartFactory.createCartStrategy();
+    const cartResult = await strategy.getCart();
 
-    // Create ProductEntity instance on the server side
-    const product = new ProductEntity({
-      id: productData.id,
-      name: productData.name,
-      slug: productData.slug,
-      price: productData.price,
-      images: productData.images,
-      stock: productData.stock,
-      description: '', // Required by ProductEntity but not used in cart
-      category: '', // Required by ProductEntity but not used in cart
-      brand: '', // Required by ProductEntity but not used in cart
-      rating: 0, // Required by ProductEntity but not used in cart
-      numReviews: 0, // Required by ProductEntity but not used in cart
-      isFeatured: false, // Required by ProductEntity but not used in cart
-      banner: null, // Required by ProductEntity but not used in cart
-      createdAt: new Date(), // Required by ProductEntity but not used in cart
-    });
-
-    if (!session?.user?.id) {
-      // Handle guest cart
-      await ServerGuestCartService.addItem(product, quantity);
-
-      revalidatePath(`/product/${product.slug}`);
-      revalidatePath('/cart');
-      return success(`${product.name} added to cart`);
-    }
-
-    // Handle authenticated user cart
-    const cartResult = await CartService.loadOrCreateCart();
     if (!cartResult.success) {
-      return failure(cartResult.error);
+      return { success: false, error: cartResult.error };
     }
 
     const cart = cartResult.value;
     if (!cart) {
-      return failure(new Error('Cart not found'));
+      return {
+        success: true,
+        value: {
+          id: crypto.randomUUID(),
+          userId: null,
+          items: [],
+          shippingPrice: 0,
+          taxPercentage: 0,
+        }
+      };
     }
 
-    const addResult = cart.addProduct(product, quantity);
+    const product = ProductEntity.create(productDto);
+
+    const addResult = await strategy.addItem(product, quantity);
     if (!addResult.success) {
-      return failure(addResult.error);
+      return { success: false, error: addResult.error };
     }
 
-    cart.setTaxPercentage(10);
-    const saveResult = await CartRepository.saveCart(cart);
-    if (!saveResult.success) {
-      return failure(saveResult.error);
+    const updatedCart = addResult.value;
+    if (!updatedCart) {
+      return {
+        success: true,
+        value: {
+          id: crypto.randomUUID(),
+          userId: null,
+          items: [],
+          shippingPrice: 0,
+          taxPercentage: 0,
+        }
+      };
     }
 
-    revalidatePath(`/product/${product.slug}`);
-    revalidatePath('/cart');
+    // Convert Map to array and ensure all data is serializable
+    const items = Array.from(updatedCart.items.entries()).map((entry) => {
+      const [productId, item] = entry as [string, CartItemEntity];
+      return {
+        id: item.id,
+        cartId: item.cartId,
+        productId,
+        quantity: item.quantity,
+        qty: item.quantity, // For backward compatibility
+        product: {
+          id: item.product.id,
+          name: item.product.name,
+          slug: item.product.slug,
+          price: item.product.price,
+          images: item.product.images,
+          stock: item.product.stock,
+        },
+      };
+    });
 
-    return success(`${product.name} added to cart`);
+    return {
+      success: true,
+      value: {
+        id: updatedCart.id,
+        userId: updatedCart.userId,
+        items,
+        shippingPrice: updatedCart.shippingPrice,
+        taxPercentage: updatedCart.taxPercentage,
+      }
+    };
   } catch (error) {
     console.error('Error adding to cart:', error);
-    return failure(new Error('Failed to add item to cart'));
+    return { success: false, error: new Error('Failed to add to cart') };
   }
 }

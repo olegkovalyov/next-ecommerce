@@ -30,6 +30,7 @@ export function CartItems({ items, inStockQuantity }: CartItemsProps): ReactElem
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
 
   const handleUpdateQuantity = async (productId: string, newQty: number) => {
+    console.log(newQty);
     setLoading((prev) => ({ ...prev, [productId]: true }));
     try {
       const result = await updateCartItem(productId, newQty);

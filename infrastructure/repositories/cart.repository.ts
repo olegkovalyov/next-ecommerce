@@ -1,10 +1,14 @@
-import { PrismaClient} from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { CartEntity } from '@/domain/entities/cart.entity';
 import { CartMapper, CartWithItems } from './mappers/cart.mapper';
 import { success, failure, Result } from '@/lib/result';
+import { prisma } from '@/infrastructure/prisma/prisma';
+
+type ExtendedPrismaClient = typeof prisma;
 
 export class CartRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: ExtendedPrismaClient) {
+  }
 
   async findById(id: string): Promise<Result<CartEntity>> {
     try {
@@ -85,12 +89,19 @@ export class CartRepository {
     }
   }
 
-  async delete(id: string): Promise<Result<void>> {
+  async delete(id: string): Promise<Result<CartEntity>> {
     try {
+
+      const cart = await this.findById(id);
+
+      if (!cart.success) {
+        return cart;
+      }
+
       await this.prisma.cart.delete({
         where: { id },
       });
-      return success(undefined);
+      return cart;
     } catch (error) {
       return failure(new Error('Failed to delete cart'));
     }

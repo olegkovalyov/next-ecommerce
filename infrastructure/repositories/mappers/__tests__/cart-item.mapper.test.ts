@@ -1,4 +1,4 @@
-import { CartItemMapper } from '../cart-item.mapper';
+import { CartItemMapper, PrismaCartItem } from '../cart-item.mapper';
 import { CartItemDto } from '@/domain/dtos';
 
 describe('CartItemMapper', () => {
@@ -11,7 +11,7 @@ describe('CartItemMapper', () => {
     brand: 'Test Brand',
     description: 'Test Description',
     stock: 10,
-    price: '10.00',
+    price: 10.00,
     rating: '4.5',
     numReviews: 100,
     isFeatured: false,
@@ -31,7 +31,7 @@ describe('CartItemMapper', () => {
 
   describe('toDto', () => {
     it('should convert CartItem to CartItemDto', () => {
-      const result = CartItemMapper.toDto(mockCartItem);
+      const result = CartItemMapper.toDto(mockCartItem as unknown as PrismaCartItem);
 
       expect(result).toEqual({
         id: mockCartItem.id,
@@ -92,4 +92,4 @@ describe('CartItemMapper', () => {
       });
     });
   });
-}); 
+});

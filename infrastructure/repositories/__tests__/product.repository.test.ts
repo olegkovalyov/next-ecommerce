@@ -1,7 +1,6 @@
 import { ProductRepository } from '../product.repository';
 import { ProductEntity } from '@/domain/entities/product.entity';
 import { prisma } from '@/infrastructure/prisma/prisma';
-import { Result } from '@/lib/result';
 import { ProductDto } from '@/domain/dtos';
 
 // Mock the prisma client

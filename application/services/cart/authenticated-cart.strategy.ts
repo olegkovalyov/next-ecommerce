@@ -1,18 +1,19 @@
 import { Result, success, failure } from '@/lib/result';
 import { ICartStrategy } from './cart.strategy';
 import { ICartRepository } from '@/domain/interfaces/cart.repository';
-import CartEntity from '@/domain/entities/cart.entity';
+import { CartEntity } from '@/domain/entities/cart.entity';
 import { ProductEntity } from '@/domain/entities/product.entity';
 
 export class AuthenticatedCartStrategy implements ICartStrategy {
   constructor(
-    private cartRepository: ICartRepository,
-    private userId: string
-  ) {}
+    private readonly cartRepository: ICartRepository,
+    private readonly userId: string,
+  ) {
+  }
 
   async getCart(): Promise<Result<CartEntity>> {
     try {
-      return await this.cartRepository.getCart(this.userId);
+      return await this.cartRepository.findByUserId(this.userId);
     } catch (error) {
       return failure(new Error('Failed to get cart'));
     }
@@ -31,7 +32,7 @@ export class AuthenticatedCartStrategy implements ICartStrategy {
         return failure(addResult.error);
       }
 
-      const saveResult = await this.cartRepository.saveCart(cart);
+      const saveResult = await this.cartRepository.save(cart);
       if (!saveResult.success) {
         return failure(saveResult.error);
       }
@@ -52,7 +53,7 @@ export class AuthenticatedCartStrategy implements ICartStrategy {
       const cart = cartResult.value;
       cart.removeProduct(productId, quantity);
 
-      const saveResult = await this.cartRepository.saveCart(cart);
+      const saveResult = await this.cartRepository.save(cart);
       if (!saveResult.success) {
         return failure(saveResult.error);
       }
@@ -71,7 +72,7 @@ export class AuthenticatedCartStrategy implements ICartStrategy {
       }
 
       const cart = cartResult.value;
-      const existingItem = cart.getCartDto().cartItemDtos.find(item => item.productId === productId);
+      const existingItem = cart.toDto().cartItemDtos.find(item => item.productId === productId);
 
       if (!existingItem) {
         return failure(new Error('Product not found in cart'));
@@ -81,12 +82,16 @@ export class AuthenticatedCartStrategy implements ICartStrategy {
       cart.removeProduct(productId, existingItem.quantity);
 
       // Then add it back with the new quantity
-      const addResult = cart.addProduct(existingItem.productDto, quantity);
+      const createProductResult = ProductEntity.fromDto(existingItem.productDto);
+      if (!createProductResult.success) {
+        return failure(createProductResult.error);
+      }
+      const addResult = cart.addProduct(createProductResult.value, quantity);
       if (!addResult.success) {
         return failure(addResult.error);
       }
 
-      const saveResult = await this.cartRepository.saveCart(cart);
+      const saveResult = await this.cartRepository.save(cart);
       if (!saveResult.success) {
         return failure(saveResult.error);
       }
@@ -97,9 +102,9 @@ export class AuthenticatedCartStrategy implements ICartStrategy {
     }
   }
 
-  async clearCart(): Promise<Result<void>> {
+  async clearCart(): Promise<Result<CartEntity>> {
     try {
-      return await this.cartRepository.deleteCart(this.userId);
+      return await this.cartRepository.delete(this.userId);
     } catch (error) {
       return failure(new Error('Failed to clear cart'));
     }

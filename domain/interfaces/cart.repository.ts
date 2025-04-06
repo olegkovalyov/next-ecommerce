@@ -1,8 +1,10 @@
 import { Result } from '@/lib/result';
-import CartEntity from '../entities/cart.entity';
+import { CartEntity } from '../entities/cart.entity';
 
 export interface ICartRepository {
-  getCart(userId: string): Promise<Result<CartEntity>>;
-  saveCart(cart: CartEntity): Promise<Result<void>>;
-  deleteCart(userId: string): Promise<Result<void>>;
-} 
+  findByUserId(userId: string): Promise<Result<CartEntity>>;
+
+  save(cart: CartEntity): Promise<Result<CartEntity>>;
+
+  delete(id: string): Promise<Result<CartEntity>>;
+}

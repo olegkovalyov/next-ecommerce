@@ -18,7 +18,7 @@ type Product = {
   createdAt: Date;
 };
 
-type CartItem = {
+export type PrismaCartItem = {
   id: string;
   cartId: string;
   productId: string;
@@ -29,7 +29,7 @@ type CartItem = {
 };
 
 export class CartItemMapper {
-  public static toDto(cartItem: CartItem): CartItemDto {
+  public static toDto(cartItem: PrismaCartItem): CartItemDto {
     return {
       id: cartItem.id,
       cartId: cartItem.cartId,

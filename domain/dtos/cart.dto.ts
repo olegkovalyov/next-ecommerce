@@ -1,9 +1,12 @@
 import { CartItemDto } from './cart-item.dto';
 
-export interface CartDto {
-  readonly id?: string;
-  readonly userId: string | null;
-  readonly shippingPrice: number;
-  readonly taxPercentage: number;
-  readonly cartItemDtos: CartItemDto[];
+export class CartDto {
+  constructor(
+    public readonly id: string,
+    public readonly userId: string | null,
+    public readonly shippingPrice: number,
+    public readonly taxPercentage: number,
+    public readonly cartItemDtos: CartItemDto[],
+  ) {
+  }
 }

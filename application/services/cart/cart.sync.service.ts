@@ -1,6 +1,7 @@
 import { Result, success, failure } from '@/lib/result';
 import { ICartStrategy } from '@/domain/interfaces/cart.strategy';
 import { CartFactory } from './cart.factory';
+import { CartEntity } from '@/domain/entities/cart.entity';
 
 export class CartSyncService {
   private guestStrategy: ICartStrategy;
@@ -25,9 +26,13 @@ export class CartSyncService {
         return failure(guestCartResult.error);
       }
 
-      const guestCart = guestCartResult.value;
-      const guestItems = Array.from(guestCart.getCartDto().cartItemDtos.values());
-      if (!guestCart || guestItems.length === 0) {
+      const guestCart = guestCartResult.value as CartEntity;
+
+      const guestItems = Array.from(guestCart.cartItems.values());
+      if (
+        !guestCart
+        || guestItems.length === 0
+      ) {
         return success(undefined);
       }
 
@@ -39,7 +44,7 @@ export class CartSyncService {
 
       // Merge guest cart items into user cart
       for (const item of guestItems) {
-        const addResult = await this.userStrategy.addItem(item.productDto, item.quantity);
+        const addResult = await this.userStrategy.addItem(item.product, item.quantity);
         if (!addResult.success) {
           console.warn(`Failed to add product ${item.productId} to user cart:`, addResult.error);
         }

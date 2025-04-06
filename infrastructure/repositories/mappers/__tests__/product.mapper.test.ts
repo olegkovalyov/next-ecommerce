@@ -1,6 +1,5 @@
 import { ProductMapper } from '../product.mapper';
 import { ProductDto } from '@/domain/dtos';
-import { Product } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
 describe('ProductMapper', () => {

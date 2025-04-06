@@ -2,17 +2,64 @@ import { CartItemRepository } from '../cart-item.repository';
 import { CartItemEntity } from '@/domain/entities/cart-item.entity';
 import { CartItemDto } from '@/domain/dtos';
 import { prisma } from '@/infrastructure/prisma/prisma';
-import { Result } from '@/lib/result';
+
+type ExtendedPrismaClient = typeof prisma;
+
+// Create a complete mock of the Prisma client
+const mockPrismaClient = {
+  product: {
+    findUnique: jest.fn(),
+    findFirst: jest.fn(),
+    findMany: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    upsert: jest.fn(),
+  },
+  user: {
+    findUnique: jest.fn(),
+    findFirst: jest.fn(),
+    findMany: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  },
+  account: {
+    findUnique: jest.fn(),
+    findFirst: jest.fn(),
+    findMany: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  },
+  cart: {
+    findUnique: jest.fn(),
+    findFirst: jest.fn(),
+    findMany: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    upsert: jest.fn(),
+  },
+  cartItem: {
+    findUnique: jest.fn(),
+    findFirst: jest.fn(),
+    findFirstOrThrow: jest.fn(),
+    findMany: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    upsert: jest.fn(),
+  },
+  $transaction: jest.fn(),
+  $connect: jest.fn(),
+  $disconnect: jest.fn(),
+  $on: jest.fn(),
+  $use: jest.fn(),
+} as unknown as ExtendedPrismaClient;
 
 jest.mock('@/infrastructure/prisma/prisma', () => ({
-  prisma: {
-    cartItem: {
-      findUnique: jest.fn(),
-      findFirstOrThrow: jest.fn(),
-      upsert: jest.fn(),
-      delete: jest.fn(),
-    },
-  },
+  prisma: mockPrismaClient,
 }));
 
 describe('CartItemRepository', () => {
@@ -31,8 +78,8 @@ describe('CartItemRepository', () => {
       brand: 'Test Brand',
       description: 'Test Description',
       stock: 10,
-      price: '10.00',
-      rating: '4.5',
+      price: 10.00,
+      rating: 4.5,
       numReviews: 100,
       isFeatured: false,
       banner: null,
@@ -41,61 +88,69 @@ describe('CartItemRepository', () => {
   };
 
   beforeEach(() => {
-    repository = new CartItemRepository(prisma);
+    repository = new CartItemRepository(mockPrismaClient);
     jest.clearAllMocks();
   });
 
   describe('findById', () => {
     it('should return a cart item when found', async () => {
-      (prisma.cartItem.findUnique as jest.Mock).mockResolvedValue(mockCartItem);
+      (mockPrismaClient.cartItem.findUnique as jest.Mock).mockResolvedValue(mockCartItem);
 
       const result = await repository.findById('test-id');
 
       expect(result.success).toBe(true);
-      expect(result.value).toBeInstanceOf(CartItemEntity);
-      expect(prisma.cartItem.findUnique).toHaveBeenCalledWith({
+      if (result.success) {
+        expect(result.value).toBeInstanceOf(CartItemEntity);
+      }
+      expect(mockPrismaClient.cartItem.findUnique).toHaveBeenCalledWith({
         where: { id: 'test-id' },
         include: { product: true },
       });
     });
 
     it('should return failure when cart item is not found', async () => {
-      (prisma.cartItem.findUnique as jest.Mock).mockResolvedValue(null);
+      (mockPrismaClient.cartItem.findUnique as jest.Mock).mockResolvedValue(null);
 
       const result = await repository.findById('non-existent-id');
 
       expect(result.success).toBe(false);
-      expect(result.error.message).toBe('Failed to load cart item');
+      if (!result.success) {
+        expect(result.error.message).toBe('Failed to load cart item');
+      }
     });
   });
 
   describe('findByCartId', () => {
     it('should return a cart item when found', async () => {
-      (prisma.cartItem.findFirstOrThrow as jest.Mock).mockResolvedValue(mockCartItem);
+      (mockPrismaClient.cartItem.findFirstOrThrow as jest.Mock).mockResolvedValue(mockCartItem);
 
       const result = await repository.findByCartId('test-cart-id');
 
       expect(result.success).toBe(true);
-      expect(result.value).toBeInstanceOf(CartItemEntity);
-      expect(prisma.cartItem.findFirstOrThrow).toHaveBeenCalledWith({
+      if (result.success) {
+        expect(result.value).toBeInstanceOf(CartItemEntity);
+      }
+      expect(mockPrismaClient.cartItem.findFirstOrThrow).toHaveBeenCalledWith({
         where: { cartId: 'test-cart-id' },
         include: { product: true },
       });
     });
 
     it('should return failure when cart item is not found', async () => {
-      (prisma.cartItem.findFirstOrThrow as jest.Mock).mockRejectedValue(new Error('Not found'));
+      (mockPrismaClient.cartItem.findFirstOrThrow as jest.Mock).mockRejectedValue(new Error('Not found'));
 
       const result = await repository.findByCartId('non-existent-cart-id');
 
       expect(result.success).toBe(false);
-      expect(result.error.message).toBe('Failed to load cart item');
+      if (!result.success) {
+        expect(result.error.message).toBe('Failed to load cart item');
+      }
     });
   });
 
   describe('save', () => {
     it('should save a cart item successfully', async () => {
-      const cartItemEntity = CartItemEntity.fromDto({
+      const cartItemDto: CartItemDto = {
         id: 'test-id',
         cartId: 'test-cart-id',
         productId: 'test-product-id',
@@ -109,22 +164,29 @@ describe('CartItemRepository', () => {
           brand: 'Test Brand',
           description: 'Test Description',
           stock: 10,
-          price: '10.00',
-          rating: '4.5',
+          price: 10.00,
+          rating: 4.5,
           numReviews: 100,
           isFeatured: false,
           banner: null,
           createdAt: new Date(),
         },
-      });
+      };
 
-      (prisma.cartItem.upsert as jest.Mock).mockResolvedValue(mockCartItem);
+      const cartItemEntityResult = CartItemEntity.fromDto(cartItemDto);
+      if (!cartItemEntityResult.success) {
+        throw new Error('Failed to create cart item entity');
+      }
 
-      const result = await repository.save(cartItemEntity.value);
+      (mockPrismaClient.cartItem.upsert as jest.Mock).mockResolvedValue(mockCartItem);
+
+      const result = await repository.save(cartItemEntityResult.value);
 
       expect(result.success).toBe(true);
-      expect(result.value).toBeInstanceOf(CartItemEntity);
-      expect(prisma.cartItem.upsert).toHaveBeenCalledWith({
+      if (result.success) {
+        expect(result.value).toBeInstanceOf(CartItemEntity);
+      }
+      expect(mockPrismaClient.cartItem.upsert).toHaveBeenCalledWith({
         where: { id: 'test-id' },
         create: expect.any(Object),
         update: expect.any(Object),
@@ -133,7 +195,7 @@ describe('CartItemRepository', () => {
     });
 
     it('should return failure when save fails', async () => {
-      const cartItemEntity = CartItemEntity.fromDto({
+      const cartItemDto: CartItemDto = {
         id: 'test-id',
         cartId: 'test-cart-id',
         productId: 'test-product-id',
@@ -147,55 +209,68 @@ describe('CartItemRepository', () => {
           brand: 'Test Brand',
           description: 'Test Description',
           stock: 10,
-          price: '10.00',
-          rating: '4.5',
+          price: 10.00,
+          rating: 4.5,
           numReviews: 100,
           isFeatured: false,
           banner: null,
           createdAt: new Date(),
         },
-      });
+      };
 
-      (prisma.cartItem.upsert as jest.Mock).mockRejectedValue(new Error('Save failed'));
+      const cartItemEntityResult = CartItemEntity.fromDto(cartItemDto);
+      if (!cartItemEntityResult.success) {
+        throw new Error('Failed to create cart item entity');
+      }
 
-      const result = await repository.save(cartItemEntity.value);
+      (mockPrismaClient.cartItem.upsert as jest.Mock).mockRejectedValue(new Error('Save failed'));
+
+      const result = await repository.save(cartItemEntityResult.value);
 
       expect(result.success).toBe(false);
-      expect(result.error.message).toBe('Failed to save cart item');
+      if (!result.success) {
+        expect(result.error.message).toBe('Failed to save cart item');
+      }
     });
   });
 
   describe('delete', () => {
     it('should delete a cart item successfully', async () => {
-      (prisma.cartItem.findUnique as jest.Mock).mockResolvedValue(mockCartItem);
-      (prisma.cartItem.delete as jest.Mock).mockResolvedValue(mockCartItem);
+      (mockPrismaClient.cartItem.findUnique as jest.Mock).mockResolvedValue(mockCartItem);
+      (mockPrismaClient.cartItem.delete as jest.Mock).mockResolvedValue(mockCartItem);
 
       const result = await repository.delete('test-id');
 
       expect(result.success).toBe(true);
-      expect(result.value).toBeInstanceOf(CartItemEntity);
-      expect(prisma.cartItem.delete).toHaveBeenCalledWith({
+      if (result.success) {
+        expect(result.value).toBeInstanceOf(CartItemEntity);
+      }
+      expect(mockPrismaClient.cartItem.delete).toHaveBeenCalledWith({
         where: { id: 'test-id' },
       });
     });
 
     it('should return failure when cart item is not found', async () => {
-      (prisma.cartItem.findUnique as jest.Mock).mockResolvedValue(null);
+      (mockPrismaClient.cartItem.findUnique as jest.Mock).mockResolvedValue(null);
 
       const result = await repository.delete('non-existent-id');
 
       expect(result.success).toBe(false);
-      expect(result.error.message).toBe('Failed to load cart item');
+      if (!result.success) {
+        expect(result.error.message).toBe('Failed to load cart item');
+      }
     });
 
     it('should return failure when delete fails', async () => {
-      (prisma.cartItem.findUnique as jest.Mock).mockResolvedValue(mockCartItem);
-      (prisma.cartItem.delete as jest.Mock).mockRejectedValue(new Error('Delete failed'));
+      (mockPrismaClient.cartItem.findUnique as jest.Mock).mockResolvedValue(mockCartItem);
+      (mockPrismaClient.cartItem.delete as jest.Mock).mockRejectedValue(new Error('Delete failed'));
 
       const result = await repository.delete('test-id');
 
       expect(result.success).toBe(false);
-      expect(result.error.message).toBe('Failed to delete cart item');
+      if (!result.success) {
+        expect(result.error.message).toBe('Failed to delete cart item');
+      }
     });
   });
-}); 
+});

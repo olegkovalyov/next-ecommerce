@@ -1,5 +1,4 @@
 import { CartDto } from '@/domain/dtos';
-import { Prisma } from '@prisma/client';
 import { CartItemMapper } from './cart-item.mapper';
 import { Decimal } from '@prisma/client/runtime/library';
 

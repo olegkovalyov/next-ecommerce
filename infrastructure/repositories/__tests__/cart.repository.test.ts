@@ -2,7 +2,6 @@ import { CartRepository } from '../cart.repository';
 import { CartEntity } from '@/domain/entities/cart.entity';
 import { CartMapper, CartWithItems } from '../mappers/cart.mapper';
 import { Decimal } from '@prisma/client/runtime/library';
-import { success, failure, Result } from '@/lib/result';
 
 jest.mock('@/infrastructure/prisma/prisma', () => ({
   prisma: {
@@ -64,7 +63,7 @@ describe('CartRepository', () => {
   };
 
   beforeEach(() => {
-    repository = new CartRepository(mockPrisma as any);
+    repository = new CartRepository(mockPrisma as never);
     jest.clearAllMocks();
   });
 
@@ -258,17 +257,22 @@ describe('CartRepository', () => {
   describe('delete', () => {
     it('should delete cart successfully', async () => {
       mockPrisma.cart.delete.mockResolvedValue(mockCart);
+      mockPrisma.cart.findUniqueOrThrow.mockResolvedValue(mockCart);
 
-      const result = await repository.delete('cart-id');
+      const result = await repository.delete('test-id');
 
       expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.value).toBeInstanceOf(CartEntity);
+      }
       expect(mockPrisma.cart.delete).toHaveBeenCalledWith({
-        where: { id: 'cart-id' },
+        where: { id: 'test-id' },
       });
+
     });
 
     it('should return failure when delete fails', async () => {
-      mockPrisma.cart.delete.mockRejectedValue(new Error('Failed to delete cart'));
+      mockPrisma.cart.delete.mockRejectedValue(new Error('Cart not found'));
 
       const result = await repository.delete('cart-id');
 
@@ -289,4 +293,4 @@ describe('CartRepository', () => {
       }
     });
   });
-}); 
+});

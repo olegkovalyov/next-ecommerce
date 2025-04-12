@@ -2,11 +2,7 @@ import { CartStrategyInterface } from '@/application/services/cart/abstract/cart
 import { CartEntity } from '@/domain/entities/cart.entity';
 import { ProductEntity } from '@/domain/entities/product.entity';
 import { Result, success, failure } from '@/lib/result';
-import { CartDto, CartItemDto } from '@/domain/dtos';
-import { cookies } from 'next/headers';
-import { CART_KEY } from '@/lib/constants';
-import { CookieCart } from '@/application/services/cart/abstract/cookie-cart.interface';
-import { ProductService } from '@/application/services/product/product.service';
+import { CartDto } from '@/domain/dtos';
 
 export class GuestCartStrategy implements CartStrategyInterface {
   private readonly cartId: string;
@@ -15,83 +11,37 @@ export class GuestCartStrategy implements CartStrategyInterface {
     this.cartId = crypto.randomUUID();
   }
 
-  private async getCookieCartItems(): Promise<Result<CookieCart>> {
+  async addItem(
+    cartDto: CartDto,
+    product: ProductEntity,
+    quantity: number = 1,
+  ): Promise<Result<CartEntity>> {
     try {
-      const cookieStore = await cookies();
-      const cookieCartItems = cookieStore.get(CART_KEY);
-      if (!cookieCartItems) {
-        return failure(new Error('Failed to get cart from cookies'));
+
+      const cartCreateResult = CartEntity.fromDto(cartDto);
+      if (!cartCreateResult.success) {
+        return failure(cartCreateResult.error);
       }
 
-      return success(JSON.parse(cookieCartItems.value));
-    } catch (error) {
-      return failure(new Error('Failed to get cart from cookies'));
-    }
-  }
+      const cart = cartCreateResult.value;
 
-  async getCart(): Promise<Result<CartEntity>> {
-    try {
-      const cookieCartItemsResult = await this.getCookieCartItems();
-      const cartItemDtos = [];
-      if (cookieCartItemsResult.success) {
-        const cookieCartItems = cookieCartItemsResult.value;
-        const productService = new ProductService();
-        for (const item of cookieCartItems.cartItems) {
-          const productResult = await productService.loadProductById(item.productId);
-          if (!productResult.success) {
-            continue;
-          }
-          const product = productResult.value;
-          const cartItemDto = new CartItemDto(
-            item.id,
-            cookieCartItems.id,
-            item.productId,
-            item.quantity,
-            product.toDto(),
-          );
-          cartItemDtos.push(cartItemDto);
-        }
-      }
-
-      const cartId = cookieCartItemsResult.success
-        ? cookieCartItemsResult.value.id
-        : crypto.randomUUID();
-
-      const cartDto = new CartDto(
-        cartId,
-        '',
-        0,
-        0,
-        cartItemDtos,
-      );
-      return CartEntity.fromDto(cartDto);
-    } catch (error) {
-      return failure(new Error('Failed to get cart'));
-    }
-  }
-
-  async addItem(product: ProductEntity, quantity: number): Promise<Result<CartEntity>> {
-    try {
-      const cartResult = await this.getCart();
-      if (!cartResult.success) {
-        return cartResult;
-      }
-
-      const cart = cartResult.value;
       const addResult = cart.addProduct(product, quantity);
       if (!addResult.success) {
         return failure(addResult.error);
       }
-
       return success(addResult.value);
     } catch (error) {
       return failure(new Error('Failed to add item to cart'));
     }
   }
 
-  async removeItem(productId: string, quantity: number): Promise<Result<CartEntity>> {
+  async removeItem(
+    cartDto: CartDto,
+    productId: string,
+    quantity: number,
+  ): Promise<Result<CartEntity>> {
     try {
-      const cartResult = await this.getCart();
+      const cartResult = CartEntity.fromDto(cartDto);
       if (!cartResult.success) {
         return cartResult;
       }
@@ -101,45 +51,17 @@ export class GuestCartStrategy implements CartStrategyInterface {
       if (!removeResult.success) {
         return failure(removeResult.error);
       }
-
       return success(cart);
     } catch (error) {
       return failure(new Error('Failed to remove item from cart'));
     }
   }
 
-  async updateItem(productId: string, quantity: number): Promise<Result<CartEntity>> {
+  async clearCart(
+    cartDto: CartDto,
+  ): Promise<Result<CartEntity>> {
     try {
-      const cartResult = await this.getCart();
-      if (!cartResult.success) {
-        return cartResult;
-      }
-
-      const cart = cartResult.value;
-      const existingItem = Array.from(cart.cartItems.values()).find(item => item.productId === productId);
-
-      if (!existingItem) {
-        return failure(new Error('Product not found in cart'));
-      }
-
-      // First remove the item completely
-      cart.removeProduct(productId, existingItem.quantity);
-
-      // Then add it back with the new quantity
-      const addResult = cart.addProduct(existingItem.product, quantity);
-      if (!addResult.success) {
-        return failure(addResult.error);
-      }
-
-      return success(cart);
-    } catch (error) {
-      return failure(new Error('Failed to update cart item'));
-    }
-  }
-
-  async clearCart(): Promise<Result<CartEntity>> {
-    try {
-      const cartResult = await this.getCart();
+      const cartResult = CartEntity.fromDto(cartDto);
       if (!cartResult.success) {
         return cartResult;
       }

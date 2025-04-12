@@ -3,10 +3,9 @@
 import { Card, CardContent } from '@/presentation/components/ui/card';
 import ProductPrice from '@/presentation/components/shared/product/product-price';
 import { Badge } from '@/presentation/components/ui/badge';
-import { AddToCart } from '@/presentation/components/shared/product/add-to-cart';
+import { CartActions } from '@/presentation/components/shared/product/cart-actions';
 import { CartDto, ProductDto } from '@/domain/dtos';
 import { useCartStore } from '@/store/cart.store';
-import { router } from 'next/client';
 
 interface ProductActionsProps {
   productDto: ProductDto;
@@ -38,7 +37,7 @@ const ProductActions = ({ productDto }: ProductActionsProps) => {
           </div>
           {productDto.stock > 0 && (
             <div className="flex-center">
-              <AddToCart productDto={productDto} cartDto={cartDto} />
+              <CartActions productDto={productDto} cartDto={cartDto} />
             </div>
           )}
         </CardContent>

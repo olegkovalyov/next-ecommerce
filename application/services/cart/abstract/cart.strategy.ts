@@ -1,15 +1,13 @@
 import { Result } from '@/lib/result';
 import { ProductEntity } from '@/domain/entities/product.entity';
 import { CartEntity } from '@/domain/entities/cart.entity';
+import { CartDto } from '@/domain/dtos';
 
 export interface CartStrategyInterface {
-  getCart(): Promise<Result<CartEntity>>;
 
-  addItem(product: ProductEntity, quantity: number): Promise<Result<CartEntity>>;
+  addItem(cartDto: CartDto, product: ProductEntity, quantity?: number): Promise<Result<CartEntity>>;
 
-  removeItem(productId: string, quantity: number): Promise<Result<CartEntity>>;
+  removeItem(cartDto: CartDto, productId: string, quantity?: number): Promise<Result<CartEntity>>;
 
-  updateItem(productId: string, quantity: number): Promise<Result<CartEntity>>;
-
-  clearCart(): Promise<Result<CartEntity>>;
+  clearCart(cartDto: CartDto): Promise<Result<CartEntity>>;
 }

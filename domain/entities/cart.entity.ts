@@ -35,7 +35,7 @@ export class CartEntity {
     return CartEntity.fromDto(cartData);
   }
 
-  private calculateItemsPrice(): number {
+  public calculateItemsPrice(): number {
     let total = 0;
     this.cartItems.forEach(item => {
       total += item.calculateSubtotal();
@@ -43,12 +43,12 @@ export class CartEntity {
     return this.roundToTwoDecimals(total);
   }
 
-  private calculateTaxPrice(): number {
+  public calculateTaxPrice(): number {
     const itemsPrice = this.calculateItemsPrice();
     return this.roundToTwoDecimals(itemsPrice * (this.taxPercentage / 100));
   }
 
-  private calculateTotalPrice(): number {
+  public calculateTotalPrice(): number {
     const itemsPrice = this.calculateItemsPrice();
     const taxPrice = this.calculateTaxPrice();
     return this.roundToTwoDecimals(itemsPrice + taxPrice + this.shippingPrice);
@@ -88,7 +88,6 @@ export class CartEntity {
     } else {
       this.cartItems.set(cartItem.productId, cartItem);
     }
-
     return success(this);
   }
 
@@ -104,8 +103,6 @@ export class CartEntity {
   }
 
   addProduct(product: ProductEntity, quantity: number = 1): Result<CartEntity> {
-    console.log('add: ', quantity);
-
     if (!product.id) {
       return failure(new Error('Product must have an ID'));
     }
@@ -119,6 +116,7 @@ export class CartEntity {
     }
 
     let currentQuantity = 0;
+
     this.toDto().cartItemDtos.forEach(item => {
       if (item.productId === product.id) {
         currentQuantity += item.quantity;

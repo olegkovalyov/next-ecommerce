@@ -16,7 +16,7 @@ interface AddToCartProps {
   cartDto: CartDto;
 }
 
-export function AddToCart({ productDto, cartDto }: AddToCartProps) {
+export function CartActions({ productDto, cartDto }: AddToCartProps) {
   const [isPending, startTransition] = useTransition();
   const { setCart, getCart } = useCartStore();
 
@@ -27,11 +27,15 @@ export function AddToCart({ productDto, cartDto }: AddToCartProps) {
     startTransition(async () => {
       try {
         const actionMap = {
-          add: () => addToCart(productDto, 1),
-          remove: () => removeFromCart(productDto.id, 1),
+          add: () => addToCart(cartDto, productDto),
+          remove: () => removeFromCart(cartDto, productDto.id),
         };
 
+        console.log('BEFORE: ', getCart());
+        console.log('ProductDto: ', productDto);
         const result = await actionMap[action]();
+
+        console.log('AFTER: ', getCart());
 
         if (!result.success) {
           toast.error(result.error.message);

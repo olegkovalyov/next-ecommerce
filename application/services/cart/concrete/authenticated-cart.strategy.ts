@@ -3,6 +3,7 @@ import { CartStrategyInterface } from '../abstract/cart.strategy';
 import { CartRepositoryInterface } from '@/application/services/cart/abstract/cart.repository';
 import { CartEntity } from '@/domain/entities/cart.entity';
 import { ProductEntity } from '@/domain/entities/product.entity';
+import { CartDto } from '@/domain/dtos';
 
 export class AuthenticatedCartStrategy implements CartStrategyInterface {
   constructor(
@@ -19,7 +20,10 @@ export class AuthenticatedCartStrategy implements CartStrategyInterface {
     }
   }
 
-  async addItem(product: ProductEntity, quantity: number): Promise<Result<CartEntity>> {
+  async addItem(
+    cartDto: CartDto,
+    product: ProductEntity,
+    quantity: number): Promise<Result<CartEntity>> {
     try {
       const cartResult = await this.getCart();
       if (!cartResult.success) {
@@ -43,7 +47,11 @@ export class AuthenticatedCartStrategy implements CartStrategyInterface {
     }
   }
 
-  async removeItem(productId: string, quantity: number): Promise<Result<CartEntity>> {
+  async removeItem(
+    cartDto: CartDto,
+    productId: string,
+    quantity: number,
+  ): Promise<Result<CartEntity>> {
     try {
       const cartResult = await this.getCart();
       if (!cartResult.success) {
@@ -61,44 +69,6 @@ export class AuthenticatedCartStrategy implements CartStrategyInterface {
       return success(cart);
     } catch (error) {
       return failure(new Error('Failed to remove item from cart'));
-    }
-  }
-
-  async updateItem(productId: string, quantity: number): Promise<Result<CartEntity>> {
-    try {
-      const cartResult = await this.getCart();
-      if (!cartResult.success) {
-        return cartResult;
-      }
-
-      const cart = cartResult.value;
-      const existingItem = cart.toDto().cartItemDtos.find(item => item.productId === productId);
-
-      if (!existingItem) {
-        return failure(new Error('Product not found in cart'));
-      }
-
-      // First remove the item completely
-      cart.removeProduct(productId, existingItem.quantity);
-
-      // Then add it back with the new quantity
-      const createProductResult = ProductEntity.fromDto(existingItem.productDto);
-      if (!createProductResult.success) {
-        return failure(createProductResult.error);
-      }
-      const addResult = cart.addProduct(createProductResult.value, quantity);
-      if (!addResult.success) {
-        return failure(addResult.error);
-      }
-
-      const saveResult = await this.cartRepository.save(cart);
-      if (!saveResult.success) {
-        return failure(saveResult.error);
-      }
-
-      return success(cart);
-    } catch (error) {
-      return failure(new Error('Failed to update cart item'));
     }
   }
 

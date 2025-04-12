@@ -21,7 +21,6 @@ export default async function ProductPage(
   }
 
   if (!productLoadResult.success) {
-    console.log('not found1');
     return notFound();
   }
 

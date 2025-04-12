@@ -5,21 +5,20 @@ import { failure, Result, success } from '@/lib/result';
 import { CartDto, ProductDto } from '@/domain/dtos';
 import { ProductEntity } from '@/domain/entities/product.entity';
 
-export async function addToCart(productDto: ProductDto, quantity: number = 1): Promise<Result<CartDto>> {
+export async function addToCart(
+  cartDto: CartDto,
+  productDto: ProductDto,
+): Promise<Result<CartDto>> {
   try {
-    const strategy = await CartFactory.createCartStrategy();
-    const cartResult = await strategy.getCart();
-
-    if (!cartResult.success) {
-      return failure(cartResult.error);
-    }
-
     const createProductResult = ProductEntity.fromDto(productDto);
     if (!createProductResult.success) {
       return failure(createProductResult.error);
     }
 
-    const addResult = await strategy.addItem(createProductResult.value, quantity);
+    const cartStrategy = await CartFactory.createCartStrategy();
+    const addResult = await cartStrategy.addItem(
+      cartDto,
+      createProductResult.value);
     if (!addResult.success) {
       return failure(addResult.error);
     }

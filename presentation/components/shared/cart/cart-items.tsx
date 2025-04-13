@@ -9,7 +9,7 @@ import { CartDto } from '@/domain/dtos';
 import { useCartActions } from '@/application/hooks/use-cart-handlers';
 
 export function CartItems({ cartDto }: { cartDto: CartDto }): ReactElement {
-  const { isPending, handleCartItemAction } = useCartActions({
+  const { isPending, handleCartItemAction, handleCartAction } = useCartActions({
     cartDto,
   });
 
@@ -64,7 +64,7 @@ export function CartItems({ cartDto }: { cartDto: CartDto }): ReactElement {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleCartItemAction('remove', item.productDto)}
+                  onClick={() => handleCartAction('remove-products', item.productDto, item.quantity)}
                   disabled={isPending}
                 >
                   {isPending ? (

@@ -6,12 +6,11 @@ import { CartDto, ProductDto } from '@/domain/dtos';
 import { addToCart } from '@/lib/actions/cart/add-to-cart.action';
 import { removeFromCart } from '@/lib/actions/cart/remove-from-cart.action';
 import { useCartStore } from '@/store/cart.store';
-import { toast } from 'sonner';
 import { clearCart } from '@/lib/actions/cart';
+import { useToast } from '@/application/hooks/use-sonner-toast';
 
 type CartItemAction = 'add' | 'remove';
 type CartAction = 'clear-cart' | 'remove-products';
-
 
 interface UseCartActionsProps {
   cartDto: CartDto;
@@ -19,7 +18,7 @@ interface UseCartActionsProps {
 
 interface UseCartActionsReturn {
   isPending: boolean;
-  handleCartAction: (action: CartAction, productDto: ProductDto) => Promise<void>;
+  handleCartAction: (action: CartAction, productDto: ProductDto, quantity?: number) => Promise<void>;
   handleCartItemAction: (action: CartItemAction, productDto: ProductDto) => Promise<void>;
   getExistingItem: (productId: string) => { productId: string; quantity: number } | undefined;
 }
@@ -27,6 +26,7 @@ interface UseCartActionsReturn {
 export function useCartActions({ cartDto }: UseCartActionsProps): UseCartActionsReturn {
   const [isPending, startTransition] = useTransition();
   const { setCart } = useCartStore();
+  const { success: showSuccess, error: showError } = useToast();
 
   const getExistingItem = (productId: string) => {
     return cartDto.cartItemDtos.find((item) => item.productId === productId);
@@ -43,7 +43,7 @@ export function useCartActions({ cartDto }: UseCartActionsProps): UseCartActions
         const result = await actionMap[action]();
 
         if (!result.success) {
-          toast.error(result.error.message);
+          // toast.error(result.error.message);
           return;
         }
 
@@ -51,31 +51,29 @@ export function useCartActions({ cartDto }: UseCartActionsProps): UseCartActions
         setCart(result.value);
 
         const successMessage = action === 'add'
-          ? 'Product added to cart'
-          : 'Product removed from cart';
+          ? `${productDto.name} added to card`
+          : `${productDto.name} removed from card`;
 
-        toast.success(successMessage);
+        showSuccess(successMessage);
+
       } catch (error) {
-        console.error('Error handling cart action:', error);
-        toast.error('Failed to update cart');
+        showError('Error handling cart item action');
+        console.error('Error handling cart item action:', error);
       }
     });
   };
 
-
-
-  const handleCartAction = async (action: CartAction, productDto: ProductDto): Promise<void> => {
+  const handleCartAction = async (action: CartAction, productDto: ProductDto, quantity: number = 1): Promise<void> => {
     startTransition(async () => {
       try {
         const actionMap = {
           ['clear-cart']: () => clearCart(cartDto),
-          ['remove-products']: () => clearCart(cartDto),
+          ['remove-products']: () => removeFromCart(cartDto, productDto.id, quantity),
         };
 
         const result = await actionMap[action]();
 
         if (!result.success) {
-          toast.error(result.error.message);
           return;
         }
 
@@ -84,12 +82,12 @@ export function useCartActions({ cartDto }: UseCartActionsProps): UseCartActions
 
         const successMessage = action === 'clear-cart'
           ? 'Cart was cleared'
-          : `All ${productDto.name}  removed from cart`;
+          : `All ${productDto.name} products were removed from cart`;
+        showSuccess(successMessage);
 
-        toast.success(successMessage);
       } catch (error) {
+        showError('Error handling cart action');
         console.error('Error handling cart action:', error);
-        toast.error('Failed to update cart');
       }
     });
   };

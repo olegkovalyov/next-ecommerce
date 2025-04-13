@@ -1,15 +1,9 @@
 'use client';
 
-import { useTransition } from 'react';
 import { Button } from '@/presentation/components/ui/button';
 import { Plus, Minus, Loader } from 'lucide-react';
-import { addToCart } from '@/lib/actions/cart/add-to-cart.action';
-import { removeFromCart } from '@/lib/actions/cart/remove-from-cart.action';
 import { CartDto, ProductDto } from '@/domain/dtos';
-import { toast } from 'sonner';
-import { useCartStore } from '@/store/cart.store';
-
-type CartAction = 'add' | 'remove';
+import { useCartActions } from '@/application/hooks/use-cart-handlers';
 
 interface AddToCartProps {
   productDto: ProductDto;
@@ -17,51 +11,17 @@ interface AddToCartProps {
 }
 
 export function CartActions({ productDto, cartDto }: AddToCartProps) {
-  const [isPending, startTransition] = useTransition();
-  const { setCart, getCart } = useCartStore();
 
-  // clearCart();
-  const existingItem = cartDto.cartItemDtos.find((item: { productId: string }) => item.productId === productDto.id);
+  const { isPending, handleCartItemAction, getExistingItem } = useCartActions({
+    cartDto,
+  });
 
-  const handleCartAction = async (action: CartAction) => {
-    startTransition(async () => {
-      try {
-        const actionMap = {
-          add: () => addToCart(cartDto, productDto),
-          remove: () => removeFromCart(cartDto, productDto.id),
-        };
-
-        console.log('BEFORE: ', getCart());
-        console.log('ProductDto: ', productDto);
-        const result = await actionMap[action]();
-
-        console.log('AFTER: ', getCart());
-
-        if (!result.success) {
-          toast.error(result.error.message);
-          return;
-        }
-
-        // Update Zustand store with the new cart state
-        setCart(result.value);
-        console.log(result.value);
-
-        const successMessage = action === 'add'
-          ? 'Product added to cart'
-          : 'Product removed from cart';
-
-        toast.success(successMessage);
-      } catch (error) {
-        console.error('Error handling cart action:', error);
-        toast.error('Failed to update cart');
-      }
-    });
-  };
+  const existingItem = getExistingItem(productDto.id);
 
   if (!existingItem) {
     return (
       <Button
-        onClick={() => handleCartAction('add')}
+        onClick={() => handleCartItemAction('add', productDto)}
         disabled={isPending || productDto.stock <= 0}
         className="w-full"
       >
@@ -86,7 +46,7 @@ export function CartActions({ productDto, cartDto }: AddToCartProps) {
         type="button"
         variant="outline"
         size="icon"
-        onClick={() => handleCartAction('remove')}
+        onClick={() => handleCartItemAction('remove', productDto)}
         disabled={isPending || existingItem.quantity === 0}
       >
         {isPending ? (
@@ -100,7 +60,7 @@ export function CartActions({ productDto, cartDto }: AddToCartProps) {
         type="button"
         variant="outline"
         size="icon"
-        onClick={() => handleCartAction('add')}
+        onClick={() => handleCartItemAction('add', productDto)}
         disabled={isPending || existingItem.quantity >= productDto.stock}
       >
         {isPending ? (

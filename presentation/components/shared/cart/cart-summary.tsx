@@ -1,37 +1,53 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { clearCart } from '@/lib/actions/cart/clear-cart.action';
 import { Button } from '@/presentation/components/ui/button';
 import { Loader } from 'lucide-react';
 import { ReactElement } from 'react';
+import { CartDto } from '@/domain/dtos';
+import { CartEntity } from '@/domain/entities/cart.entity';
+import { useCartStore } from '@/store/cart.store';
 
 interface CartSummaryProps {
-  itemsPrice: number;
-  shippingPrice: number;
-  taxPrice: number;
-  totalPrice: number;
+  cartDto: CartDto;
   isGuest: boolean;
 }
 
-export function CartSummary({
-  itemsPrice,
-  shippingPrice,
-  taxPrice,
-  totalPrice,
-  isGuest,
-}: CartSummaryProps): ReactElement {
+export function CartSummary(
+  {
+    cartDto,
+    isGuest,
+  }: CartSummaryProps): ReactElement {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [itemsPrice, setItemsPrice] = useState(0);
+  const [taxPrice, setTaxPrice] = useState(0);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const { setCart } = useCartStore();
+
+  useEffect(() => {
+    const createCartResult = CartEntity.fromDto(cartDto);
+    if (!createCartResult.success) {
+      return;
+    }
+    const cart = createCartResult.value;
+    // Calculate cart totals
+    setItemsPrice(cart.calculateItemsPrice());
+    setTaxPrice(cart.calculateTaxPrice());
+    setTotalPrice(cart.calculateTotalPrice());
+  }, [cartDto]);
 
   const handleClearCart = async () => {
     setLoading(true);
     try {
-      const result = await clearCart();
+      const result = await clearCart(cartDto);
       if (!result.success) {
-        console.error('Failed to clear cart:', result.error);
+        return;
       }
+      const updatedCartDto = result.value;
+      setCart(updatedCartDto);
       router.refresh();
     } catch (error) {
       console.error('Error clearing cart:', error);
@@ -51,7 +67,7 @@ export function CartSummary({
         </div>
         <div className="flex items-center justify-between border-t border-gray-200 pt-4">
           <dt className="text-sm text-gray-600">Shipping</dt>
-          <dd className="text-sm font-medium text-gray-900">${shippingPrice.toFixed(2)}</dd>
+          <dd className="text-sm font-medium text-gray-900">${cartDto.shippingPrice.toFixed(2)}</dd>
         </div>
         <div className="flex items-center justify-between border-t border-gray-200 pt-4">
           <dt className="text-sm text-gray-600">Tax</dt>

@@ -1,13 +1,18 @@
 'use server';
 
 import { CartFactory } from '@/application/services/cart/concrete/cart.factory';
-import { Result } from '@/lib/result';
+import { failure, Result, success } from '@/lib/result';
+import { CartDto } from '@/domain/dtos';
 
-export async function clearCart(): Promise<Result<void>> {
+export async function clearCart(cartDto: CartDto): Promise<Result<CartDto>> {
   try {
-    const strategy = await CartFactory.createCartStrategy();
-    return await strategy.clearCart();
+    const cartStrategy = await CartFactory.createCartStrategy();
+    const result = await cartStrategy.clearCart(cartDto);
+    if (result.success) {
+      return success(result.value.toDto());
+    }
+    return failure(result.error);
   } catch (error) {
-    return { success: false, error: new Error('Failed to clear cart') };
+    return failure(new Error('Failed to clear cart'));
   }
 }

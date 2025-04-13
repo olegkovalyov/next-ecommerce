@@ -1,8 +1,8 @@
 import { ProductEntity } from '@/domain/entities/product.entity';
 import { prisma } from '@/infrastructure/prisma/prisma';
-import { failure, Result, success } from '@/lib/result';
+import { failure, Result } from '@/lib/result';
 import { formatError } from '@/lib/utils';
-import { ProductMapper } from '@/domain/mappers/product.mapper';
+import { ProductMapper } from '@/infrastructure/repositories/mappers/product.mapper';
 
 class ProductRepository {
   static async saveProduct(product: ProductEntity): Promise<Result<ProductEntity>> {
@@ -31,7 +31,7 @@ class ProductRepository {
       });
 
       const updatedProductDto = ProductMapper.toDto(result);
-      return success(ProductEntity.create(updatedProductDto));
+      return ProductEntity.create(updatedProductDto);
     } catch (error: unknown) {
       return failure(new Error(formatError(error)));
     }
@@ -48,7 +48,7 @@ class ProductRepository {
       }
 
       const productDto = ProductMapper.toDto(productData);
-      return success(ProductEntity.create(productDto));
+      return ProductEntity.create(productDto);
     } catch (error: unknown) {
       return failure(new Error(formatError(error)));
     }
@@ -65,24 +65,7 @@ class ProductRepository {
       }
 
       const productDto = ProductMapper.toDto(productData);
-      return success(ProductEntity.create(productDto));
-    } catch (error: unknown) {
-      return failure(new Error(formatError(error)));
-    }
-  }
-
-  static async getFeaturedProducts(): Promise<Result<ProductEntity[]>> {
-    try {
-      const productsData = await prisma.product.findMany({
-        where: { isFeatured: true },
-      });
-
-      const products = productsData.map((productData) => {
-        const productDto = ProductMapper.toDto(productData);
-        return ProductEntity.create(productDto);
-      });
-
-      return success(products);
+      return ProductEntity.create(productDto);
     } catch (error: unknown) {
       return failure(new Error(formatError(error)));
     }

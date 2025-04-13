@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma/client';
 import { CartEntity } from '@/domain/entities/cart.entity';
 import { CartMapper, CartWithItems } from './mappers/cart.mapper';
-import { success, failure, Result } from '@/lib/result';
+import { failure, Result } from '@/lib/result';
 import { prisma } from '@/infrastructure/prisma/prisma';
 
 type ExtendedPrismaClient = typeof prisma;

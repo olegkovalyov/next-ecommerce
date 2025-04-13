@@ -1,58 +1,17 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { removeFromCart } from '@/lib/actions/cart/remove-from-cart.action';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/presentation/components/ui/button';
 import { Loader, Minus, Plus } from 'lucide-react';
 import { ReactElement } from 'react';
 import { CartDto } from '@/domain/dtos';
+import { useCartActions } from '@/application/hooks/use-cart-handlers';
 
-export function CartItems({cartDto}: { cartDto: CartDto }): ReactElement {
-  const router = useRouter();
-  const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
-
-  const handleUpdateQuantity = async (productId: string, newQty: number) => {
-    // setLoading((prev) => ({ ...prev, [productId]: true }));
-    // try {
-    //   const result = await updateCartItem(productId, newQty);
-    //   if (!result.success) {
-    //     console.error('Failed to update cart:', result.error);
-    //   }
-    //   router.refresh();
-    // } catch (error) {
-    //   console.error('Error updating cart:', error);
-    // } finally {
-    //   setLoading((prev) => ({ ...prev, [productId]: false }));
-    // }
-  };
-
-  const getInStockQuantity = (productId: string): number => {
-    // const existingProduct = inStockQuantity.filter((product) => {
-    //   return product.productId === productId;
-    // });
-    // if (existingProduct.length) {
-    //   return existingProduct[0].inStockQuantity;
-    // }
-    return 0;
-  };
-
-  const handleRemoveItem = async (productId: string, shouldRemoveAll: boolean = false) => {
-    setLoading((prev) => ({ ...prev, [productId]: true }));
-    try {
-      const result = await removeFromCart(cartDto, productId);
-      if (!result.success) {
-        console.error('Failed to remove item:', result.error);
-      }
-      router.refresh();
-    } catch (error) {
-      console.error('Error removing item:', error);
-    } finally {
-      setLoading((prev) => ({ ...prev, [productId]: false }));
-    }
-  };
+export function CartItems({ cartDto }: { cartDto: CartDto }): ReactElement {
+  const { isPending, handleCartItemAction, handleCartAction } = useCartActions({
+    cartDto,
+  });
 
   return (
     <div className="flow-root">
@@ -84,8 +43,8 @@ export function CartItems({cartDto}: { cartDto: CartDto }): ReactElement {
                     variant="outline"
                     type="button"
                     className="font-medium text-indigo-600 hover:text-indigo-500"
-                    onClick={() => handleUpdateQuantity(item.productId, item.quantity - 1)}
-                    disabled={loading[item.productId] || item.quantity <= 1}
+                    onClick={() => handleCartItemAction('remove', item.productDto)}
+                    disabled={isPending || item.quantity === 0}
                   >
                     <Minus className="w-4 h-4" />
                   </Button>
@@ -95,8 +54,8 @@ export function CartItems({cartDto}: { cartDto: CartDto }): ReactElement {
                     type="button"
                     size="icon"
                     className="font-medium text-black hover:text-indigo-500"
-                    onClick={() => handleUpdateQuantity(item.productId, item.quantity + 1)}
-                    disabled={loading[item.productId] || item.quantity >= getInStockQuantity(item.productId)}
+                    onClick={() => handleCartItemAction('add', item.productDto)}
+                    disabled={isPending || item.quantity >= item.productDto.stock}
                   >
                     <Plus className="w-4 h-4" />
                   </Button>
@@ -105,10 +64,10 @@ export function CartItems({cartDto}: { cartDto: CartDto }): ReactElement {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleRemoveItem(item.productId, true)}
-                  disabled={loading[item.productId]}
+                  onClick={() => handleCartAction('remove-products', item.productDto, item.quantity)}
+                  disabled={isPending}
                 >
-                  {loading[item.productId] ? (
+                  {isPending ? (
                     <Loader className="h-4 w-4 animate-spin" />
                   ) : (
                     'Remove'

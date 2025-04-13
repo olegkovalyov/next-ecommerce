@@ -12,7 +12,6 @@ import { CartItems } from '@/presentation/components/shared/cart/cart-items';
 const CartPage = (): ReactElement => {
   const { getCart } = useCartStore();
   const cartDto = getCart() as CartDto;
-  console.log('CartDto: ', cartDto);
 
   const createCartResult = CartEntity.fromDto(cartDto);
 
@@ -33,11 +32,6 @@ const CartPage = (): ReactElement => {
       </div>
     );
   }
-  const cart = createCartResult.value;
-  // Calculate cart totals
-  const itemsPrice = cart.calculateItemsPrice()
-  const taxPrice = cart.calculateTaxPrice();
-  const totalPrice = cart.calculateTotalPrice();
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -48,10 +42,7 @@ const CartPage = (): ReactElement => {
         </div>
         <div className="lg:col-span-1">
           <CartSummary
-            itemsPrice={itemsPrice}
-            shippingPrice={cartDto.shippingPrice}
-            taxPrice={taxPrice}
-            totalPrice={totalPrice}
+            cartDto={cartDto}
             isGuest={true}
           />
         </div>

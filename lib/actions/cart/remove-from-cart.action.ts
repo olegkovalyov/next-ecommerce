@@ -7,10 +7,11 @@ import { CartDto } from '@/domain/dtos';
 export async function removeFromCart(
   cartDto: CartDto,
   productId: string,
+  quantity: number = 1,
 ): Promise<Result<CartDto>> {
   try {
     const cartStrategy = await CartFactory.createCartStrategy();
-    const removeResult = await cartStrategy.removeItem(cartDto, productId);
+    const removeResult = await cartStrategy.removeItem(cartDto, productId, quantity);
     if (!removeResult.success) {
       return failure(removeResult.error);
     }

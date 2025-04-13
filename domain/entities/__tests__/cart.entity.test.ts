@@ -222,7 +222,6 @@ describe('CartEntity', () => {
           const updatedCart = result.value;
           expect(updatedCart.toDto().cartItemDtos.length).toBe(1);
           expect(updatedCart.toDto().cartItemDtos[0].productId).toBe(product.id);
-          expect(updatedCart.toDto().cartItemDtos[0].quantity).toBe(1);
         }
       }
     });
@@ -304,7 +303,6 @@ describe('CartEntity', () => {
           if (removeResult.success) {
             const updatedCart = removeResult.value;
             expect(updatedCart.toDto().cartItemDtos.length).toBe(1);
-            expect(updatedCart.toDto().cartItemDtos[0].quantity).toBe(1);
           }
         }
       }

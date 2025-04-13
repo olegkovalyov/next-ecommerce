@@ -1,36 +1,18 @@
 'use client';
 
-import { useToast } from '@/application/hooks/use-toast';
-import {
-  Toast,
-  ToastClose,
-  ToastDescription,
-  ToastProvider,
-  ToastTitle,
-  ToastViewport,
-} from '@/presentation/components/ui/toast';
-import { ReactElement } from 'react';
+import { Toaster as Sonner } from 'sonner';
 
-export const Toaster = (): ReactElement => {
-  const { toasts } = useToast();
-
+export const Toaster = () => {
   return (
-    <ToastProvider>
-      {toasts.map(function({ id, title, description, action, ...props }) {
-        return (
-          <Toast key={id} {...props}>
-            <div className="grid gap-1">
-              {title && <ToastTitle>{title}</ToastTitle>}
-              {description && (
-                <ToastDescription>{description}</ToastDescription>
-              )}
-            </div>
-            {action}
-            <ToastClose />
-          </Toast>
-        );
-      })}
-      <ToastViewport />
-    </ToastProvider>
+    <Sonner
+      position="top-right"
+      toastOptions={{
+        style: {
+          background: 'hsl(var(--background))',
+          color: 'hsl(var(--foreground))',
+          border: '1px solid hsl(var(--border))',
+        },
+      }}
+    />
   );
-}
+};

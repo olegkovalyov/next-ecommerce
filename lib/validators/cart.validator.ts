@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { currency } from '@/lib/validators/common';
 
 export const cartItemSchema = z.object({
   id: z.string().min(1, 'Cart item id is required'),

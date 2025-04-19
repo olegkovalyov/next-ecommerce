@@ -5,18 +5,18 @@ import { CartDto } from '@/domain/dtos';
 
 interface CartState {
   cart: CartDto | null;
-  setCart: (cart: CartDto) => void;
+  setCartDto: (cart: CartDto) => void;
   clearCart: () => void;
-  getCart: () => CartDto | null;
+  getCartDto: () => CartDto | null;
 }
 
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       cart: null,
-      setCart: (cart) => set({ cart }),
+      setCartDto: (cart) => set({ cart }),
       clearCart: () => set({ cart: null }),
-      getCart: () => get().cart,
+      getCartDto: () => get().cart,
     }),
     {
       name: 'cart-storage',

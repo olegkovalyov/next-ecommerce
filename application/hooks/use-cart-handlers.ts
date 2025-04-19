@@ -25,7 +25,7 @@ interface UseCartActionsReturn {
 
 export function useCartActions({ cartDto }: UseCartActionsProps): UseCartActionsReturn {
   const [isPending, startTransition] = useTransition();
-  const { setCart } = useCartStore();
+  const { setCartDto } = useCartStore();
   const { success: showSuccess, error: showError } = useToast();
 
   const getExistingItem = (productId: string) => {
@@ -48,7 +48,7 @@ export function useCartActions({ cartDto }: UseCartActionsProps): UseCartActions
         }
 
         // Update Zustand store with the new cart state
-        setCart(result.value);
+        setCartDto(result.value);
 
         const successMessage = action === 'add'
           ? `${productDto.name} added to card`
@@ -78,7 +78,7 @@ export function useCartActions({ cartDto }: UseCartActionsProps): UseCartActions
         }
 
         // Update Zustand store with the new cart state
-        setCart(result.value);
+        setCartDto(result.value);
 
         const successMessage = action === 'clear-cart'
           ? 'Cart was cleared'

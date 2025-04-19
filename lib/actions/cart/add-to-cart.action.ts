@@ -15,6 +15,7 @@ export async function addToCart(
       return failure(createProductResult.error);
     }
 
+
     const cartStrategy = await CartFactory.createCartStrategy();
     const addResult = await cartStrategy.addItem(
       cartDto,

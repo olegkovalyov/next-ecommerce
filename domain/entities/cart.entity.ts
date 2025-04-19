@@ -4,14 +4,14 @@ import { CartItemEntity } from '@/domain/entities/cart-item.entity';
 import { CartDto, CartItemDto } from '@/domain/dtos';
 
 export class CartEntity {
-  public readonly id: string = '';
+  public readonly id;
   public readonly userId: string | null = null;
   cartItems: Map<string, CartItemEntity> = new Map();
   shippingPrice: number = 0;
   taxPercentage: number = 0;
 
   private constructor(cartData: CartDto) {
-    this.id = cartData.id ?? '';
+    this.id = cartData.id ? cartData.id : crypto.randomUUID();
     this.userId = cartData.userId ?? null;
     this.shippingPrice = cartData.shippingPrice;
     this.taxPercentage = cartData.taxPercentage;

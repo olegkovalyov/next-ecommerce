@@ -10,15 +10,16 @@ import { CartEntity } from '@/domain/entities/cart.entity';
 import { CartItems } from '@/presentation/components/shared/cart/cart-items';
 
 const CartPage = (): ReactElement => {
-  const { getCart } = useCartStore();
-  const cartDto = getCart() as CartDto;
+  const { getCartDto } = useCartStore();
+  const cartDto = getCartDto() as CartDto;
+
 
   const createCartResult = CartEntity.fromDto(cartDto);
 
   // If there's an error getting the cart, show empty cart state
   if (
-    !cartDto.cartItemDtos.length
-    || !createCartResult.success
+    !createCartResult.success
+    || !cartDto.cartItemDtos.length
   ) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">

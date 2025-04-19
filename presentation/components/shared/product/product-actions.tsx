@@ -13,9 +13,20 @@ interface ProductActionsProps {
 
 const ProductActions = ({ productDto }: ProductActionsProps) => {
 
-  const { getCart } = useCartStore();
+  const { getCartDto, setCartDto } = useCartStore();
 
-  const cartDto = getCart() as CartDto;
+  let cartDto = getCartDto();
+
+  if (!cartDto) {
+    cartDto = new CartDto(
+      '',
+      null,
+      0,
+      0,
+      [],
+    );
+    setCartDto(cartDto);
+  }
 
   return (
     <div>

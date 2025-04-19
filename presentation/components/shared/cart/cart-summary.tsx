@@ -25,7 +25,7 @@ export function CartSummary(
   const [itemsPrice, setItemsPrice] = useState(0);
   const [taxPrice, setTaxPrice] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
-  const { setCart } = useCartStore();
+  const { setCartDto } = useCartStore();
 
   useEffect(() => {
     const createCartResult = CartEntity.fromDto(cartDto);
@@ -47,7 +47,7 @@ export function CartSummary(
         return;
       }
       const updatedCartDto = result.value;
-      setCart(updatedCartDto);
+      setCartDto(updatedCartDto);
       router.refresh();
     } catch (error) {
       console.error('Error clearing cart:', error);

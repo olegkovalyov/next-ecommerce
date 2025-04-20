@@ -1,24 +1,33 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/presentation/components/ui/button';
+import { Input } from '@/presentation/components/ui/input';
+import { Label } from '@/presentation/components/ui/label';
 import Link from 'next/link';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { signUpUser } from '@/lib/actions/auth.actions';
+import { ReactElement, useEffect } from 'react';
 
-const SignUpForm = () => {
+const SignUpForm = (): ReactElement => {
   const [data, action] = useActionState(signUpUser, {
     success: false,
     message: '',
   });
 
   const searchParams = useSearchParams();
+  const router = useRouter();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
 
-  const SignUpButton = () => {
+  // Handle redirect on successful signup
+  useEffect(() => {
+    if (data?.success && data?.redirectUrl) {
+      router.push(data.redirectUrl);
+    }
+  }, [data, router]);
+
+  const SignUpButton = (): ReactElement => {
     const { pending } = useFormStatus();
 
     return (

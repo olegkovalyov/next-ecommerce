@@ -1,64 +1,45 @@
-import { getProductBySlug } from '@/lib/actions/product.actions';
 import { notFound } from 'next/navigation';
-import ProductImages from '@/components/shared/product/product-images';
-import ProductDetails from '@/components/shared/product/product-details';
-import ProductActions from '@/components/shared/product/product-actions';
-import { CartLoader } from '@/infrastructure/services/cart.loader';
-import { convertToPlainObject } from '@/lib/utils';
+import { ProductService } from '@/application/services/product/product.service';
+import ProductDetails from '@/presentation/components/shared/product/product-details';
+import ProductImages from '@/presentation/components/shared/product/product-images';
+import ProductActions from '@/presentation/components/shared/product/product-actions';
+import { ReactElement } from 'react';
 
-const ProductDetailsPage = async (props: {
+interface ProductPageProps {
   params: Promise<{ slug: string }>;
-}) => {
-  const { slug } = await props.params;
+}
 
-  const product = await getProductBySlug(slug);
-  if (!product) {
-    notFound();
+export default async function ProductPage(
+  {
+    params,
+  }: ProductPageProps): Promise<ReactElement> {
+  const { slug } = await params;
+  const productService = new ProductService();
+  const productLoadResult = await productService.loadProductBySlug(slug);
+  if (!productLoadResult.success) {
+    return notFound();
   }
 
-  const cartResult = await CartLoader.loadOrCreateCart();
-  const cart = cartResult.success ? cartResult.value : null;
+  if (!productLoadResult.success) {
+    return notFound();
+  }
 
   // Convert product to plain object and serialize for client components
-  const plainProduct = convertToPlainObject(product);
-  const serializedProduct = {
-    id: plainProduct.id,
-    name: plainProduct.name,
-    slug: plainProduct.slug,
-    price: Number(plainProduct.price),
-    images: plainProduct.images,
-    stock: plainProduct.stock,
-  };
-
-  // Convert cart data to match expected Cart type
-  const cartData = cart?.getCartData();
-  const serializedCart = cartData ? {
-    id: cartData.id,
-    items: cartData.items,
-    shippingPrice: cartData.shippingPrice,
-    taxPercentage: cartData.taxPercentage,
-    sessionCartId: cartData.sessionCartId || '',
-    userId: cartData.userId || undefined,
-  } : null;
+  const productDto = productLoadResult.value.toDto();
 
   return (
-    <>
-      <section>
-        <div className="grid grid-cols-1 md:grid-cols-5">
-          <div className="col-span-2">
-            <ProductImages images={product.images} />
-          </div>
-          <div className="col-span-2 p-5">
-            <ProductDetails product={product} />
-          </div>
-          <ProductActions
-            product={serializedProduct}
-            cart={serializedCart}
-          />
+    <section>
+      <div className="grid grid-cols-1 md:grid-cols-5">
+        <div className="col-span-2">
+          <ProductImages images={productDto.images} />
         </div>
-      </section>
-    </>
+        <div className="col-span-2 p-5">
+          <ProductDetails product={productDto} />
+        </div>
+        <ProductActions
+          productDto={productDto}
+        />
+      </div>
+    </section>
   );
-};
-
-export default ProductDetailsPage;
+}

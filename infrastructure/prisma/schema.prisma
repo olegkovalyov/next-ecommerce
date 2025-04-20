@@ -1,0 +1,93 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  slug        String     @unique(map: "product_slug_idx")
+  category    String
+  images      String[]
+  brand       String
+  description String
+  stock       Int
+  price       Decimal    @default(0) @db.Decimal(12, 2)
+  rating      Decimal    @default(0) @db.Decimal(3, 2)
+  numReviews  Int        @default(0) @map("num_reviews")
+  isFeatured  Boolean    @default(false) @map("is_featured")
+  banner      String?
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
+  cartItems   CartItem[]
+
+  @@map("products")
+}
+
+model User {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String   @default("")
+  email         String   @unique
+  image         String?
+  password      String?
+  role          String   @default("user")
+  address       Json?    @db.Json
+  paymentMethod String?  @map("payment_method")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  carts         Cart?
+
+  @@map("users")
+}
+
+model Account {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String   @map("user_id") @db.Uuid
+  type              String
+  provider          String
+  providerAccountId String   @map("provider_account_id")
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Cart {
+  id            String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String?    @unique @map("user_id") @db.Uuid
+  createdAt     DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+  items         CartItem[]
+  user          User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cartId    String   @map("cart_id") @db.Uuid
+  productId String   @map("product_id") @db.Uuid
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @map("updated_at")
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId])
+  @@index([cartId])
+  @@index([productId])
+  @@map("cart_items")
+}

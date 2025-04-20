@@ -1,16 +1,34 @@
-import { CartLoader } from '@/infrastructure/services/cart.loader';
-import { auth } from '@/auth';
-import { CartItems } from '@/components/shared/cart/cart-items';
-import { CartSummary } from '@/components/shared/cart/cart-summary';
-import { Button } from '@/components/ui/button';
+'use client';
+
+import { ReactElement, useEffect } from 'react';
+import { CartSummary } from '@/presentation/components/shared/cart/cart-summary';
+import { Button } from '@/presentation/components/ui/button';
 import Link from 'next/link';
+import { useCartStore } from '@/store/cart.store';
+import { CartEntity } from '@/domain/entities/cart.entity';
+import { CartItems } from '@/presentation/components/shared/cart/cart-items';
+import { useAuthStore } from '@/store/auth.store';
+import { useCartSync } from '@/application/hooks/use-cart-sync';
 
-const CartPage = async () => {
-  const session = await auth();
-  const cartResult = await CartLoader.loadOrCreateCart();
-  const cart = cartResult.success ? cartResult.value : null;
+const CartPage = (): ReactElement => {
+  const { getCartDto } = useCartStore();
+  const { isAuthenticated } = useAuthStore();
+  const { debouncedSyncCart } = useCartSync();
+  const cartDto = getCartDto();
 
-  if (!cart || cart.getCartData().items.length === 0) {
+  useEffect(() => {
+    if (isAuthenticated()) {
+      debouncedSyncCart(cartDto);
+    }
+  }, [cartDto, debouncedSyncCart, isAuthenticated]);
+
+  const createCartResult = CartEntity.fromDto(cartDto);
+
+  // If there's an error getting the cart, show empty cart state
+  if (
+    !createCartResult.success
+    || !cartDto.cartItemDtos.length
+  ) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <h2 className="text-2xl font-bold mb-4">Your cart is empty</h2>
@@ -24,30 +42,17 @@ const CartPage = async () => {
     );
   }
 
-  const cartData = cart.getCartData();
-
-  // Calculate cart totals
-  const itemsPrice = cartData.items.reduce(
-    (sum, item) => sum + item.price * item.qty,
-    0
-  );
-  const taxPrice = (itemsPrice * cartData.taxPercentage) / 100;
-  const totalPrice = itemsPrice + cartData.shippingPrice + taxPrice;
-
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          <CartItems items={cartData.items} />
+          <CartItems cartDto={cartDto} />
         </div>
         <div className="lg:col-span-1">
           <CartSummary
-            itemsPrice={itemsPrice}
-            shippingPrice={cartData.shippingPrice}
-            taxPrice={taxPrice}
-            totalPrice={totalPrice}
-            isGuest={!session?.user?.id}
+            cartDto={cartDto}
+            isGuest={true}
           />
         </div>
       </div>

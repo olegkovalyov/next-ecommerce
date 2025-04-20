@@ -2,7 +2,7 @@
 import { convertToPlainObject } from '../utils';
 import { LATEST_PRODUCTS_LIMIT } from '../constants';
 import { Product } from '@/lib/contracts/product';
-import { prisma } from '@/db/prisma';
+import { prisma } from '@/infrastructure/prisma/prisma';
 
 // Get latest products
 export async function getLatestProducts(): Promise<Array<Product>> {
@@ -11,7 +11,12 @@ export async function getLatestProducts(): Promise<Array<Product>> {
     orderBy: { createdAt: 'desc' },
   });
 
-  return <Array<Product>><unknown>convertToPlainObject(data);
+  const products = convertToPlainObject(data);
+  return products.map(product => ({
+    ...product,
+    price: Number(product.price),
+    rating: Number(product.rating)
+  }));
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
@@ -23,10 +28,10 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     return null;
   }
 
-  // Convert price to number
   const plainProduct = convertToPlainObject(product);
   return {
     ...plainProduct,
     price: Number(plainProduct.price),
+    rating: Number(plainProduct.rating)
   };
 }

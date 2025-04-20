@@ -1,48 +1,25 @@
 'use server';
 
-import { auth } from '@/auth';
-import { revalidatePath } from 'next/cache';
-import { Result, success, failure } from '@/lib/result';
-import { CartLoader } from '@/infrastructure/services/cart.loader';
-import { CartRepository } from '@/infrastructure/persistence/cart.repository';
-import { ServerGuestCartService } from '@/infrastructure/services/server-guest-cart.service';
+import { failure, Result, success } from '@/lib/result';
+import { CartDto } from '@/domain/dtos';
+import { CartService } from '@/application/services/cart/cart.service';
 
 export async function removeFromCart(
+  cartDto: CartDto,
   productId: string,
-  shouldRemoveAll: boolean = false
-): Promise<Result<string>> {
+  quantity: number = 1,
+): Promise<Result<CartDto>> {
   try {
-    const session = await auth();
-
-    if (!session?.user?.id) {
-      // Handle guest cart
-      await ServerGuestCartService.removeItem(productId, shouldRemoveAll);
-      revalidatePath('/cart');
-      return success('Item removed from cart');
+    const removeResult = await CartService.removeItem(cartDto, productId, quantity);
+    if (!removeResult.success) {
+      return failure(removeResult.error);
     }
 
-    // Handle authenticated user cart
-    const cartResult = await CartLoader.loadOrCreateCart();
-    if (!cartResult.success) {
-      return failure(cartResult.error);
-    }
+    const updatedCart = removeResult.value;
+    return success(updatedCart.toDto());
 
-    const cart = cartResult.value;
-    if (!cart) {
-      return failure(new Error('Cart not found'));
-    }
-
-    cart.removeProduct(productId);
-
-    const saveResult = await CartRepository.saveCart(cart);
-    if (!saveResult.success) {
-      return failure(saveResult.error);
-    }
-
-    revalidatePath('/cart');
-    return success('Item removed from cart');
   } catch (error) {
     console.error('Error removing from cart:', error);
-    return failure(new Error('Failed to remove item from cart'));
+    return { success: false, error: new Error('Failed to remove from cart') };
   }
 }

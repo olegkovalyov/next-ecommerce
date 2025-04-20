@@ -4,13 +4,13 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from '@/presentation/components/ui/card';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { APP_NAME } from '@/lib/constants';
 import CredentialsSignInForm from './credentials-signin-form';
-import { auth } from '@/auth';
+import { auth } from '@/infrastructure/auth/auth';
 import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
@@ -21,7 +21,7 @@ const SignInPage = async (props: {
   searchParams: Promise<{
     callbackUrl: string;
   }>;
-}) => {
+}): Promise<JSX.Element> => {
   const { callbackUrl } = await props.searchParams;
 
   const session = await auth();

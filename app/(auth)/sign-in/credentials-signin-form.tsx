@@ -1,15 +1,16 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/presentation/components/ui/button';
+import { Input } from '@/presentation/components/ui/input';
+import { Label } from '@/presentation/components/ui/label';
 import Link from 'next/link';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import { signInWithCredentials } from '@/lib/actions/auth.actions';
+import { ReactElement } from 'react';
 
-const CredentialsSignInForm = () => {
+const CredentialsSignInForm = (): ReactElement => {
   const [data, action] = useActionState(signInWithCredentials, {
     success: false,
     message: '',
@@ -20,7 +21,7 @@ const CredentialsSignInForm = () => {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
 
-  const SignInButton = () => {
+  const SignInButton = (): ReactElement => {
     const { pending } = useFormStatus();
 
     return (

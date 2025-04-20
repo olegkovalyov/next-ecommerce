@@ -5,8 +5,6 @@ import { Decimal } from '@prisma/client/runtime/library';
 export type CartWithItems = {
   id: string;
   userId: string | null;
-  shippingPrice: Decimal;
-  taxPercentage: Decimal;
   createdAt: Date;
   updatedAt: Date;
   items: Array<{
@@ -40,29 +38,22 @@ export class CartMapper {
     return {
       id: cart.id,
       userId: cart.userId,
-      shippingPrice: Number(cart.shippingPrice),
-      taxPercentage: Number(cart.taxPercentage),
+      taxPercentage: 0, // Hardcoded to 0 as per requirements
       cartItemDtos: cart.items.map(item => CartItemMapper.toDto(item)),
     };
   }
 
   public static toPrisma(cartDto: CartDto): {
-    userId: string | null;
-    shippingPrice: Decimal;
-    taxPercentage: Decimal;
+    user: { connect: { id: string } } | null;
   } {
     return {
-      userId: cartDto.userId,
-      shippingPrice: new Decimal(cartDto.shippingPrice),
-      taxPercentage: new Decimal(cartDto.taxPercentage),
+      user: cartDto.userId ? { connect: { id: cartDto.userId } } : null,
     };
   }
 
   public static toPrismaWithItems(cartDto: CartDto): {
     cart: {
-      userId: string | null;
-      shippingPrice: Decimal;
-      taxPercentage: Decimal;
+      user: { connect: { id: string } } | null;
     };
     items: Array<{
       cartId: string;

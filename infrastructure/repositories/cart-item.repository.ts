@@ -1,12 +1,10 @@
 import { CartItemEntity } from '@/domain/entities/cart-item.entity';
 import { CartItemMapper } from './mappers/cart-item.mapper';
-import { prisma } from '@/infrastructure/prisma/prisma';
 import { failure, Result } from '@/lib/result';
-
-type ExtendedPrismaClient = typeof prisma;
+import { PrismaClient } from '@prisma/client';
 
 export class CartItemRepository {
-  constructor(private readonly prisma: ExtendedPrismaClient) {
+  constructor(private readonly prisma: PrismaClient) {
   }
 
   async findById(id: string): Promise<Result<CartItemEntity>> {

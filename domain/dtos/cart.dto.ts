@@ -4,7 +4,6 @@ export class CartDto {
   constructor(
     public readonly id: string,
     public readonly userId: string | null,
-    public readonly shippingPrice: number,
     public readonly taxPercentage: number,
     public readonly cartItemDtos: CartItemDto[],
   ) {

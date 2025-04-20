@@ -4,29 +4,29 @@ import { Card, CardContent } from '@/presentation/components/ui/card';
 import ProductPrice from '@/presentation/components/shared/product/product-price';
 import { Badge } from '@/presentation/components/ui/badge';
 import { CartActions } from '@/presentation/components/shared/product/cart-actions';
-import { CartDto, ProductDto } from '@/domain/dtos';
+import { ProductDto } from '@/domain/dtos';
 import { useCartStore } from '@/store/cart.store';
+import { ReactElement, useEffect } from 'react';
+import { useAuthStore } from '@/store/auth.store';
+import { useCartSync } from '@/application/hooks/use-cart-sync';
 
 interface ProductActionsProps {
   productDto: ProductDto;
 }
 
-const ProductActions = ({ productDto }: ProductActionsProps) => {
+const ProductActions = ({ productDto }: ProductActionsProps): ReactElement => {
 
-  const { getCartDto, setCartDto } = useCartStore();
+  const { isAuthenticated } = useAuthStore();
+  const { debouncedSyncCart } = useCartSync();
+  const { getCartDto } = useCartStore();
 
-  let cartDto = getCartDto();
+  const cartDto = getCartDto();
 
-  if (!cartDto) {
-    cartDto = new CartDto(
-      '',
-      null,
-      0,
-      0,
-      [],
-    );
-    setCartDto(cartDto);
-  }
+  useEffect(() => {
+    if (isAuthenticated()) {
+      debouncedSyncCart(cartDto);
+    }
+  }, [cartDto, debouncedSyncCart, isAuthenticated]);
 
   return (
     <div>

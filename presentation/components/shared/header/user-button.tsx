@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { auth } from '@/infrastructure/auth/auth';
-import { signOutUser } from '@/lib/actions/auth.actions';
 import { Button } from '@/presentation/components/ui/button';
 import {
   DropdownMenu,
@@ -11,6 +10,7 @@ import {
 } from '@/presentation/components/ui/dropdown-menu';
 import { UserIcon } from 'lucide-react';
 import { ReactElement } from 'react';
+import { SignOutButton } from '@/presentation/components/shared/header/sign-out-buttom';
 
 declare module "next-auth" {
   interface Session {
@@ -62,14 +62,7 @@ const UserButton = async (): Promise<ReactElement> => {
             </div>
           </DropdownMenuLabel>
           <DropdownMenuItem className="p-0 mb-1">
-            <form action={signOutUser} className="w-full">
-              <Button
-                className="w-full py-4 px-2 h-4 justify-start"
-                variant="ghost"
-              >
-                Sign Out
-              </Button>
-            </form>
+            <SignOutButton />
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

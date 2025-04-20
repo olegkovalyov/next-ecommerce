@@ -8,7 +8,6 @@ import { compareSync } from 'bcrypt-ts-edge';
 import type { NextAuthConfig } from 'next-auth';
 import { prisma } from '@/infrastructure/prisma/prisma';
 import { cookies } from 'next/headers';
-import { CartSyncService } from '@/application/services/cart/concrete/cart-sync.service';
 
 export const config: NextAuthConfig = {
   pages: {
@@ -95,8 +94,9 @@ export const config: NextAuthConfig = {
   events: {
     async signIn({ user }): Promise<void> {
       try {
-        const userId = String(user.id);
-        await (await CartSyncService.create(userId)).syncGuestCartToUser();
+        console.log(user.id);
+        // const userId = String(user.id);
+        // await (await CartSyncService.create(userId)).syncGuestCartToUser();
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Failed to sync cart:', error);
@@ -104,8 +104,6 @@ export const config: NextAuthConfig = {
       }
     },
     async signOut(): Promise<void> {
-      const cookieStore = await cookies();
-      cookieStore.delete('guest_cart');
       // eslint-disable-next-line no-console
       console.log('Signed out');
       // Handle sign out

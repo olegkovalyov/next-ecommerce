@@ -3,41 +3,48 @@ import { PrismaNeon } from '@prisma/adapter-neon';
 import { PrismaClient } from '@prisma/client';
 import ws from 'ws';
 
-// Sets up WebSocket connections, which enables Neon to use WebSocket communication.
+// Sets up WebSocket connections for Neon
 neonConfig.webSocketConstructor = ws;
-const connectionString = `${process.env.DATABASE_URL}`;
 
-// Creates a new connection pool using the provided connection string, allowing multiple concurrent connections.
-const pool = new Pool({ connectionString });
+const createPrismaClient = () => {
+  // For production environment, use Neon adapter
+  if (process.env.NODE_ENV === 'production') {
+    const connectionString = `${process.env.DATABASE_URL}`;
+    const pool = new Pool({ connectionString });
+    const adapter = new PrismaNeon(pool);
 
-// Instantiates the Prisma adapter using the Neon connection pool to handle the connection between Prisma and Neon.
-const adapter = new PrismaNeon(pool);
-
-export const prisma = new PrismaClient({ adapter }).$extends({
-  result: {
-    product: {
-      price: {
-        compute(product) {
-          return product.price.toString();
+    return new PrismaClient({ adapter }).$extends({
+      result: {
+        product: {
+          price: {
+            compute(product) {
+              return product.price.toString();
+            },
+          },
+          rating: {
+            compute(product) {
+              return product.rating.toString();
+            },
+          },
+        },
+        cartItem: {
+          product: {
+            compute(cartItem: { product: { price: any; rating: any; [key: string]: any } }) {
+              return {
+                ...cartItem.product,
+                price: cartItem.product.price.toString(),
+                rating: cartItem.product.rating.toString(),
+              };
+            },
+          },
         },
       },
-      rating: {
-        compute(product) {
-          return product.rating.toString();
-        },
-      },
-    },
-    cartItem: {
-      product: {
-        compute(cartItem: { product: { price: any; rating: any; [key: string]: any } }) {
-          return {
-            ...cartItem.product,
-            price: cartItem.product.price.toString(),
-            rating: cartItem.product.rating.toString(),
-          };
-        },
-      },
-    },
-  },
-});
+    });
+  }
+
+  // For local development, use standard Prisma client
+  return new PrismaClient();
+};
+
+export const prisma = createPrismaClient() as PrismaClient;
 

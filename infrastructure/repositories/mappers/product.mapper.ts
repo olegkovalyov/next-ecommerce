@@ -2,13 +2,8 @@ import { ProductDto } from '@/domain/dtos';
 import { Product } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
-type ExtendedProduct = Omit<Product, 'price' | 'rating'> & {
-  price: string;
-  rating: string;
-};
-
 export class ProductMapper {
-  public static toDto(product: ExtendedProduct): ProductDto {
+  public static toDto(product: Product): ProductDto {
     return {
       id: product.id,
       name: product.name,

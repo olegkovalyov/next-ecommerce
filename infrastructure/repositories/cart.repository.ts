@@ -1,12 +1,10 @@
 import { CartEntity } from '@/domain/entities/cart.entity';
 import { CartMapper, CartWithItems } from './mappers/cart.mapper';
 import { failure, Result } from '@/lib/result';
-import { prisma } from '@/infrastructure/prisma/prisma';
-
-type ExtendedPrismaClient = typeof prisma;
+import { PrismaClient } from '@prisma/client';
 
 export class CartRepository {
-  constructor(private readonly prisma: ExtendedPrismaClient) {
+  constructor(private readonly prisma: PrismaClient) {
   }
 
   async findById(id: string): Promise<Result<CartEntity>> {
@@ -55,7 +53,9 @@ export class CartRepository {
         where: { id: cart.id },
         create: {
           id: cart.id,
-          ...prismaCart,
+          user: prismaCart.user ? {
+            connect: { id: prismaCart.user.connect.id }
+          } : undefined,
           items: {
             create: prismaItems.map(item => ({
               productId: item.productId,
@@ -64,9 +64,13 @@ export class CartRepository {
           },
         },
         update: {
-          ...prismaCart,
+          user: prismaCart.user ? {
+            connect: { id: prismaCart.user.connect.id }
+          } : undefined,
           items: {
-            deleteMany: {},
+            deleteMany: {
+              cartId: cart.id
+            },
             create: prismaItems.map(item => ({
               productId: item.productId,
               quantity: item.quantity,
@@ -84,6 +88,10 @@ export class CartRepository {
 
       return CartEntity.fromDto(CartMapper.toDto(data as unknown as CartWithItems));
     } catch (error) {
+      // In test environment, errors are expected and handled by the test cases
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Failed to save cart:', error);
+      }
       return failure(new Error('Failed to save cart'));
     }
   }

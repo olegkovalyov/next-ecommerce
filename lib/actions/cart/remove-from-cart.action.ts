@@ -1,8 +1,8 @@
 'use server';
 
-import { CartFactory } from '@/application/services/cart/concrete/cart.factory';
 import { failure, Result, success } from '@/lib/result';
 import { CartDto } from '@/domain/dtos';
+import { CartService } from '@/application/services/cart/cart.service';
 
 export async function removeFromCart(
   cartDto: CartDto,
@@ -10,8 +10,7 @@ export async function removeFromCart(
   quantity: number = 1,
 ): Promise<Result<CartDto>> {
   try {
-    const cartStrategy = await CartFactory.createCartStrategy();
-    const removeResult = await cartStrategy.removeItem(cartDto, productId, quantity);
+    const removeResult = await CartService.removeItem(cartDto, productId, quantity);
     if (!removeResult.success) {
       return failure(removeResult.error);
     }

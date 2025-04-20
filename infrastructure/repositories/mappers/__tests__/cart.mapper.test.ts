@@ -33,8 +33,6 @@ describe('CartMapper', () => {
   const mockCart = {
     id: 'cart-id',
     userId: null,
-    shippingPrice: new Decimal('5.00'),
-    taxPercentage: new Decimal('10.00'),
     createdAt: new Date(),
     updatedAt: new Date(),
     items: [mockCartItem],
@@ -47,8 +45,7 @@ describe('CartMapper', () => {
       expect(result).toEqual({
         id: mockCart.id,
         userId: mockCart.userId,
-        shippingPrice: Number(mockCart.shippingPrice),
-        taxPercentage: Number(mockCart.taxPercentage),
+        taxPercentage: 0,
         cartItemDtos: [{
           id: mockCartItem.id,
           cartId: mockCartItem.cartId,
@@ -80,8 +77,7 @@ describe('CartMapper', () => {
       const cartDto: CartDto = {
         id: 'cart-id',
         userId: null,
-        shippingPrice: 5.00,
-        taxPercentage: 10.00,
+        taxPercentage: 0,
         cartItemDtos: [{
           id: mockCartItem.id,
           cartId: mockCartItem.cartId,
@@ -109,9 +105,7 @@ describe('CartMapper', () => {
       const result = CartMapper.toPrisma(cartDto);
 
       expect(result).toEqual({
-        userId: cartDto.userId,
-        shippingPrice: new Decimal(cartDto.shippingPrice),
-        taxPercentage: new Decimal(cartDto.taxPercentage),
+        user: null,
       });
     });
   });
@@ -121,8 +115,7 @@ describe('CartMapper', () => {
       const cartDto: CartDto = {
         id: 'cart-id',
         userId: null,
-        shippingPrice: 5.00,
-        taxPercentage: 10.00,
+        taxPercentage: 0,
         cartItemDtos: [{
           id: mockCartItem.id,
           cartId: mockCartItem.cartId,
@@ -151,9 +144,7 @@ describe('CartMapper', () => {
 
       expect(result).toEqual({
         cart: {
-          userId: cartDto.userId,
-          shippingPrice: new Decimal(cartDto.shippingPrice),
-          taxPercentage: new Decimal(cartDto.taxPercentage),
+          user: null,
         },
         items: [{
           cartId: cartDto.cartItemDtos[0].cartId,
@@ -163,4 +154,4 @@ describe('CartMapper', () => {
       });
     });
   });
-}); 
+});

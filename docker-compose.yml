@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  nginx:
+    build:
+      context: ./docker/nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+      - ./docker/nginx/ssl:/etc/nginx/ssl
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - postgres
+
+  postgres:
+    build:
+      context: ./docker/postgres
+      dockerfile: Dockerfile
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: next_ecommerce
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/postgresql.conf:/etc/postgresql/postgresql.conf
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

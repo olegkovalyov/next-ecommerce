@@ -67,8 +67,6 @@ model Account {
 model Cart {
   id            String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId        String?    @unique @map("user_id") @db.Uuid
-  shippingPrice Decimal    @default(0) @map("shipping_price") @db.Decimal(12, 2)
-  taxPercentage Decimal    @default(0) @map("tax_percentage") @db.Decimal(5, 2)
   createdAt     DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt     DateTime   @updatedAt @map("updated_at")
   items         CartItem[]

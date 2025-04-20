@@ -58,8 +58,6 @@ CREATE TABLE "accounts" (
 CREATE TABLE "carts" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "user_id" UUID,
-    "shipping_price" DECIMAL(12,2) NOT NULL DEFAULT 0,
-    "tax_percentage" DECIMAL(5,2) NOT NULL DEFAULT 0,
     "created_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -88,10 +86,10 @@ CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 CREATE UNIQUE INDEX "accounts_provider_provider_account_id_key" ON "accounts"("provider", "provider_account_id");
 
 -- CreateIndex
-CREATE INDEX "carts_user_id_idx" ON "carts"("user_id");
+CREATE UNIQUE INDEX "carts_user_id_key" ON "carts"("user_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "carts_user_id_key" ON "carts"("user_id");
+CREATE INDEX "carts_user_id_idx" ON "carts"("user_id");
 
 -- CreateIndex
 CREATE INDEX "cart_items_cart_id_idx" ON "cart_items"("cart_id");

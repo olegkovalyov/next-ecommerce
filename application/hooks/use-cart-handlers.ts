@@ -1,4 +1,3 @@
-// hooks/useCartActions.ts
 'use client';
 
 import { useTransition } from 'react';
@@ -43,7 +42,7 @@ export function useCartActions({ cartDto }: UseCartActionsProps): UseCartActions
         const result = await actionMap[action]();
 
         if (!result.success) {
-          // toast.error(result.error.message);
+          showError(result.error.message);
           return;
         }
 
@@ -74,6 +73,7 @@ export function useCartActions({ cartDto }: UseCartActionsProps): UseCartActions
         const result = await actionMap[action]();
 
         if (!result.success) {
+          showError(result.error.message);
           return;
         }
 

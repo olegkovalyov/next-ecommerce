@@ -11,7 +11,6 @@ export const cartItemSchema = z.object({
 export const cartSchema = z.object({
   id: z.string().min(1, 'Cart id is required'),
   userId: z.string().nullable(),
-  shippingPrice: z.number().min(0, 'Shipping price must be at least 0'),
   taxPercentage: z.number().min(0, 'Tax percentage must be at least 0'),
   items: z.array(cartItemSchema),
 });

@@ -7,13 +7,11 @@ export class CartEntity {
   public readonly id;
   public readonly userId: string | null = null;
   cartItems: Map<string, CartItemEntity> = new Map();
-  shippingPrice: number = 0;
   taxPercentage: number = 0;
 
   private constructor(cartData: CartDto) {
     this.id = cartData.id ? cartData.id : crypto.randomUUID();
     this.userId = cartData.userId ?? null;
-    this.shippingPrice = cartData.shippingPrice;
     this.taxPercentage = cartData.taxPercentage;
     this.initCartItemsFromDtos(cartData.cartItemDtos);
   }
@@ -51,7 +49,7 @@ export class CartEntity {
   public calculateTotalPrice(): number {
     const itemsPrice = this.calculateItemsPrice();
     const taxPrice = this.calculateTaxPrice();
-    return this.roundToTwoDecimals(itemsPrice + taxPrice + this.shippingPrice);
+    return this.roundToTwoDecimals(itemsPrice + taxPrice);
   }
 
   private calculateTotalItems(): number {
@@ -66,7 +64,6 @@ export class CartEntity {
     return {
       id: this.id,
       userId: this.userId,
-      shippingPrice: this.shippingPrice,
       taxPercentage: this.taxPercentage,
       cartItemDtos: Array.from(this.cartItems.values()).map(item => item.toDto()),
     };
@@ -165,14 +162,6 @@ export class CartEntity {
 
   private roundToTwoDecimals(value: number): number {
     return Math.round(value * 100) / 100;
-  }
-
-  setShippingPrice(price: number): Result<CartEntity> {
-    if (price < 0) {
-      return failure(new Error('Shipping price cannot be negative'));
-    }
-    this.shippingPrice = this.roundToTwoDecimals(price);
-    return success(this);
   }
 
   setTaxPercentage(percentage: number): Result<CartEntity> {

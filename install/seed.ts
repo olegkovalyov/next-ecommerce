@@ -27,16 +27,12 @@ async function main() {
   const adminCart = await prisma.cart.create({
     data: {
       userId: adminUser.id,
-      shippingPrice: 0,
-      taxPercentage: 0,
     },
   });
 
   const userCart = await prisma.cart.create({
     data: {
       userId: regularUser.id,
-      shippingPrice: 0,
-      taxPercentage: 0,
     },
   });
 

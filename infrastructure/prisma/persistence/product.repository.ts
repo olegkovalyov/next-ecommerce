@@ -3,6 +3,7 @@ import { prisma } from '@/infrastructure/prisma/prisma';
 import { failure, Result } from '@/lib/result';
 import { formatError } from '@/lib/utils';
 import { ProductMapper } from '@/infrastructure/repositories/mappers/product.mapper';
+import { PrismaClient } from '@prisma/client';
 
 class ProductRepository {
   static async saveProduct(product: ProductEntity): Promise<Result<ProductEntity>> {
@@ -24,7 +25,7 @@ class ProductRepository {
         createdAt: product.createdAt,
       });
 
-      const result = await prisma.product.upsert({
+      const result = await (prisma as PrismaClient).product.upsert({
         where: { id: product.id },
         update: prismaProduct,
         create: prismaProduct,
@@ -39,7 +40,7 @@ class ProductRepository {
 
   static async getProductById(id: string): Promise<Result<ProductEntity>> {
     try {
-      const productData = await prisma.product.findUnique({
+      const productData = await (prisma as PrismaClient).product.findUnique({
         where: { id },
       });
 
@@ -56,7 +57,7 @@ class ProductRepository {
 
   static async getProductBySlug(slug: string): Promise<Result<ProductEntity>> {
     try {
-      const productData = await prisma.product.findUnique({
+      const productData = await (prisma as PrismaClient).product.findUnique({
         where: { slug },
       });
 

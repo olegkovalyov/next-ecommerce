@@ -32,7 +32,6 @@ describe('CartEntity', () => {
   const mockCartDto: CartDto = {
     id: 'cart-1',
     userId: 'user-1',
-    shippingPrice: 0,
     taxPercentage: 0,
     cartItemDtos: [mockCartItemDto],
   };
@@ -45,7 +44,6 @@ describe('CartEntity', () => {
         const cart = result.value;
         expect(cart.id).toBe(mockCartDto.id);
         expect(cart.userId).toBe(mockCartDto.userId);
-        expect(cart.shippingPrice).toBe(mockCartDto.shippingPrice);
         expect(cart.taxPercentage).toBe(mockCartDto.taxPercentage);
       }
     });
@@ -60,7 +58,6 @@ describe('CartEntity', () => {
         const dto = cart.toDto();
         expect(dto.id).toBe(mockCartDto.id);
         expect(dto.userId).toBe(mockCartDto.userId);
-        expect(dto.shippingPrice).toBe(mockCartDto.shippingPrice);
         expect(dto.taxPercentage).toBe(mockCartDto.taxPercentage);
       }
     });
@@ -344,38 +341,6 @@ describe('CartEntity', () => {
           if (!removeResult.success) {
             expect(removeResult.error.message).toBe('Quantity must be a positive number');
           }
-        }
-      }
-    });
-  });
-
-  describe('setShippingPrice', () => {
-    it('should set shipping price', () => {
-      const cartResult = CartEntity.fromDto(mockCartDto);
-      expect(cartResult.success).toBe(true);
-
-      if (cartResult.success) {
-        const cart = cartResult.value;
-        const result = cart.setShippingPrice(10);
-        expect(result.success).toBe(true);
-
-        if (result.success) {
-          const updatedCart = result.value;
-          expect(updatedCart.shippingPrice).toBe(10);
-        }
-      }
-    });
-
-    it('should fail when shipping price is negative', () => {
-      const cartResult = CartEntity.fromDto(mockCartDto);
-      expect(cartResult.success).toBe(true);
-
-      if (cartResult.success) {
-        const cart = cartResult.value;
-        const result = cart.setShippingPrice(-10);
-        expect(result.success).toBe(false);
-        if (!result.success) {
-          expect(result.error.message).toBe('Shipping price cannot be negative');
         }
       }
     });

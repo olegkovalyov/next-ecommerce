@@ -2,20 +2,29 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { CartDto } from '@/domain/dtos';
 
-
 interface CartState {
-  cart: CartDto | null;
+  cart: CartDto;
   setCartDto: (cart: CartDto) => void;
   clearCart: () => void;
-  getCartDto: () => CartDto | null;
+  getCartDto: () => CartDto;
 }
+
+const createDefaultCart = () => {
+  const defaultCart: CartDto = {
+    id: crypto.randomUUID(),
+    userId: null,
+    taxPercentage: 0,
+    cartItemDtos: [],
+  };
+  return defaultCart;
+};
 
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
-      cart: null,
+      cart: createDefaultCart(),
       setCartDto: (cart) => set({ cart }),
-      clearCart: () => set({ cart: null }),
+      clearCart: () => set({ cart: createDefaultCart() }),
       getCartDto: () => get().cart,
     }),
     {
@@ -31,6 +40,6 @@ export const useCartStore = create<CartState>()(
         },
         removeItem: (name) => localStorage.removeItem(name),
       },
-    }
-  )
+    },
+  ),
 );

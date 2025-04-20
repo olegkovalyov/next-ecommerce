@@ -1,12 +1,10 @@
 import { ProductEntity } from '@/domain/entities/product.entity';
 import { ProductMapper } from './mappers/product.mapper';
-import { prisma } from '@/infrastructure/prisma/prisma';
 import { failure, Result } from '@/lib/result';
-
-type ExtendedPrismaClient = typeof prisma;
+import { PrismaClient } from '@prisma/client';
 
 export class ProductRepository {
-  constructor(private readonly prisma: ExtendedPrismaClient) {
+  constructor(private readonly prisma: PrismaClient) {
   }
 
   async findById(id: string): Promise<Result<ProductEntity>> {

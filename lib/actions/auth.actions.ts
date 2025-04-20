@@ -2,10 +2,13 @@
 
 import { signIn, signOut } from '@/infrastructure/auth/auth';
 import { hashSync } from 'bcrypt-ts-edge';
-import { prisma } from '@/infrastructure/prisma/prisma';
+import { PrismaClient } from '@prisma/client';
 import { signInFormSchema, signUpFormSchema } from '@/lib/validators/auth.validator';
 import { isRedirectError } from 'next/dist/client/components/redirect-error';
 import { formatError } from '@/lib/utils';
+
+// Create a non-extended Prisma client for user operations
+const rawPrisma = new PrismaClient();
 
 type SignInResponse = {
   success: boolean;
@@ -54,10 +57,14 @@ export async function signOutUser(): Promise<void> {
 type SignUpResponse = {
   success: boolean;
   message: string;
+  redirectUrl?: string;
 };
 
-// Sign up user
-export async function signUpUser(prevState: unknown, formData: FormData): Promise<SignUpResponse> {
+// Sign up a new user
+export async function signUpUser(
+  prevState: unknown,
+  formData: FormData,
+): Promise<SignUpResponse> {
   try {
     const user = signUpFormSchema.parse({
       name: formData.get('name'),
@@ -67,10 +74,9 @@ export async function signUpUser(prevState: unknown, formData: FormData): Promis
     });
 
     const plainPassword = user.password;
-
     user.password = hashSync(user.password, 10);
 
-    await prisma.user.create({
+    await rawPrisma.user.create({
       data: {
         name: user.name,
         email: user.email,
@@ -78,12 +84,27 @@ export async function signUpUser(prevState: unknown, formData: FormData): Promis
       },
     });
 
-    await signIn('credentials', {
-      email: user.email,
-      password: plainPassword,
-    });
+    // Automatically sign in the user after registration
+    try {
+      await signIn('credentials', {
+        email: user.email,
+        password: plainPassword,
+      });
 
-    return { success: true, message: 'User registered successfully' };
+      // Return success with redirect URL to home page
+      return {
+        success: true,
+        message: 'Account created and signed in successfully',
+        redirectUrl: '/',
+      };
+    } catch (signInError) {
+      // If sign in fails, redirect to sign in page
+      return {
+        success: true,
+        message: 'Account created successfully. Please sign in.',
+        redirectUrl: '/sign-in?message=Account created successfully. Please sign in.',
+      };
+    }
   } catch (error: unknown) {
     return {
       success: false,

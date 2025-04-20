@@ -55,8 +55,6 @@ describe('CartRepository', () => {
   const mockCart: CartWithItems = {
     id: 'cart-id',
     userId: null,
-    shippingPrice: new Decimal('5.00'),
-    taxPercentage: new Decimal('10.00'),
     createdAt: new Date(),
     updatedAt: new Date(),
     items: [mockCartItem],
@@ -77,8 +75,7 @@ describe('CartRepository', () => {
       if (result.success) {
         expect(result.value.id).toBe('cart-id');
         expect(result.value.userId).toBeNull();
-        expect(result.value.shippingPrice).toBe(5);
-        expect(result.value.taxPercentage).toBe(10);
+        expect(result.value.taxPercentage).toBe(0);
         expect(result.value.cartItems.size).toBe(1);
       }
       expect(mockPrisma.cart.findUniqueOrThrow).toHaveBeenCalledWith({
@@ -126,8 +123,7 @@ describe('CartRepository', () => {
       if (result.success) {
         expect(result.value.id).toBe('cart-id');
         expect(result.value.userId).toBeNull();
-        expect(result.value.shippingPrice).toBe(5);
-        expect(result.value.taxPercentage).toBe(10);
+        expect(result.value.taxPercentage).toBe(0);
         expect(result.value.cartItems.size).toBe(1);
       }
       expect(mockPrisma.cart.findFirstOrThrow).toHaveBeenCalledWith({
@@ -183,15 +179,16 @@ describe('CartRepository', () => {
       if (result.success) {
         expect(result.value.id).toBe('cart-id');
         expect(result.value.userId).toBeNull();
-        expect(result.value.shippingPrice).toBe(5);
-        expect(result.value.taxPercentage).toBe(10);
+        expect(result.value.taxPercentage).toBe(0);
         expect(result.value.cartItems.size).toBe(1);
       }
       expect(mockPrisma.cart.upsert).toHaveBeenCalledWith({
         where: { id: cartDto.id },
         create: {
           id: cartDto.id,
-          ...prismaCart,
+          user: prismaCart.user ? {
+            connect: { id: prismaCart.user.connect.id }
+          } : undefined,
           items: {
             create: prismaItems.map(item => ({
               productId: item.productId,
@@ -200,7 +197,9 @@ describe('CartRepository', () => {
           },
         },
         update: {
-          ...prismaCart,
+          user: prismaCart.user ? {
+            connect: { id: prismaCart.user.connect.id }
+          } : undefined,
           items: {
             deleteMany: {},
             create: prismaItems.map(item => ({
@@ -268,7 +267,6 @@ describe('CartRepository', () => {
       expect(mockPrisma.cart.delete).toHaveBeenCalledWith({
         where: { id: 'test-id' },
       });
-
     });
 
     it('should return failure when delete fails', async () => {

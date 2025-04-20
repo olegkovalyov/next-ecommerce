@@ -1,18 +1,26 @@
 'use client';
 
-import { ReactElement } from 'react';
+import { ReactElement, useEffect } from 'react';
 import { CartSummary } from '@/presentation/components/shared/cart/cart-summary';
 import { Button } from '@/presentation/components/ui/button';
 import Link from 'next/link';
 import { useCartStore } from '@/store/cart.store';
-import { CartDto } from '@/domain/dtos';
 import { CartEntity } from '@/domain/entities/cart.entity';
 import { CartItems } from '@/presentation/components/shared/cart/cart-items';
+import { useAuthStore } from '@/store/auth.store';
+import { useCartSync } from '@/application/hooks/use-cart-sync';
 
 const CartPage = (): ReactElement => {
   const { getCartDto } = useCartStore();
-  const cartDto = getCartDto() as CartDto;
+  const { isAuthenticated } = useAuthStore();
+  const { debouncedSyncCart } = useCartSync();
+  const cartDto = getCartDto();
 
+  useEffect(() => {
+    if (isAuthenticated()) {
+      debouncedSyncCart(cartDto);
+    }
+  }, [cartDto, debouncedSyncCart, isAuthenticated]);
 
   const createCartResult = CartEntity.fromDto(cartDto);
 

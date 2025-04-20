@@ -11,6 +11,7 @@ import {
 } from '@/presentation/components/ui/sheet';
 import UserButton from './user-button';
 import { ReactElement } from 'react';
+import CartButton from '@/presentation/components/shared/header/cart-button';
 
 const Menu = (): ReactElement => {
   return (
@@ -19,7 +20,7 @@ const Menu = (): ReactElement => {
         <ModeToggle />
         <Button asChild variant="ghost">
           <Link href="/cart">
-            <ShoppingCart /> Cart
+            <CartButton/>
           </Link>
         </Button>
         <UserButton />

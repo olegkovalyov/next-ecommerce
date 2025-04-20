@@ -67,7 +67,7 @@ export function CartSummary(
         </div>
         <div className="flex items-center justify-between border-t border-gray-200 pt-4">
           <dt className="text-sm text-gray-600">Shipping</dt>
-          <dd className="text-sm font-medium text-gray-900">${cartDto.shippingPrice.toFixed(2)}</dd>
+          <dd className="text-sm font-medium text-gray-900">0</dd>
         </div>
         <div className="flex items-center justify-between border-t border-gray-200 pt-4">
           <dt className="text-sm text-gray-600">Tax</dt>

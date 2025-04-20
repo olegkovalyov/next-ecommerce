@@ -1,9 +1,9 @@
 'use server';
 
-import { CartFactory } from '@/application/services/cart/concrete/cart.factory';
 import { failure, Result, success } from '@/lib/result';
 import { CartDto, ProductDto } from '@/domain/dtos';
 import { ProductEntity } from '@/domain/entities/product.entity';
+import { CartService } from '@/application/services/cart/cart.service';
 
 export async function addToCart(
   cartDto: CartDto,
@@ -16,8 +16,7 @@ export async function addToCart(
     }
 
 
-    const cartStrategy = await CartFactory.createCartStrategy();
-    const addResult = await cartStrategy.addItem(
+    const addResult = await CartService.addItem(
       cartDto,
       createProductResult.value);
     if (!addResult.success) {

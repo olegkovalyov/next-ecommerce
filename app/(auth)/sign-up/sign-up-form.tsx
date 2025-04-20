@@ -6,9 +6,9 @@ import { Label } from '@/presentation/components/ui/label';
 import Link from 'next/link';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { signUpUser } from '@/lib/actions/auth.actions';
-import { ReactElement } from 'react';
+import { ReactElement, useEffect } from 'react';
 
 const SignUpForm = (): ReactElement => {
   const [data, action] = useActionState(signUpUser, {
@@ -17,7 +17,15 @@ const SignUpForm = (): ReactElement => {
   });
 
   const searchParams = useSearchParams();
+  const router = useRouter();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
+
+  // Handle redirect on successful signup
+  useEffect(() => {
+    if (data?.success && data?.redirectUrl) {
+      router.push(data.redirectUrl);
+    }
+  }, [data, router]);
 
   const SignUpButton = (): ReactElement => {
     const { pending } = useFormStatus();

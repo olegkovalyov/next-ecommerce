@@ -1,17 +1,13 @@
-import { CartStrategyInterface } from '@/application/services/cart/abstract/cart.strategy';
 import { CartEntity } from '@/domain/entities/cart.entity';
 import { ProductEntity } from '@/domain/entities/product.entity';
 import { Result, success, failure } from '@/lib/result';
 import { CartDto } from '@/domain/dtos';
 
-export class GuestCartStrategy implements CartStrategyInterface {
-  private readonly cartId: string;
-
+export class CartService {
   constructor() {
-    this.cartId = crypto.randomUUID();
   }
 
-  async addItem(
+  static async addItem(
     cartDto: CartDto,
     product: ProductEntity,
     quantity: number = 1,
@@ -35,7 +31,7 @@ export class GuestCartStrategy implements CartStrategyInterface {
     }
   }
 
-  async removeItem(
+  static async removeItem(
     cartDto: CartDto,
     productId: string,
     quantity: number,
@@ -57,7 +53,7 @@ export class GuestCartStrategy implements CartStrategyInterface {
     }
   }
 
-  async clearCart(
+  static async clearCart(
     cartDto: CartDto,
   ): Promise<Result<CartEntity>> {
     try {

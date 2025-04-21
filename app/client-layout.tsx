@@ -16,7 +16,7 @@ interface ClientLayoutProps {
 export default function ClientLayout({ children, isLogged, cartDto }: Readonly<ClientLayoutProps>): ReactElement | null {
   const [mounted, setMounted] = useState(false);
   const { setAuthenticated } = useAuthStore();
-  const { setCartDto, clearCart } = useCartStore();
+  const { setCartDto } = useCartStore();
 
   useEffect(() => {
     if (cartDto) {
@@ -29,12 +29,6 @@ export default function ClientLayout({ children, isLogged, cartDto }: Readonly<C
     setMounted(true);
     setAuthenticated(isLogged);
   }, [isLogged, setAuthenticated]);
-
-  useEffect(() => {
-    if (!isLogged) {
-      clearCart();
-    }
-  }, [isLogged, clearCart]);
 
   if (!mounted) {
     return null;

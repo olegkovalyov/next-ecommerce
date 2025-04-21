@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/infrastructure/prisma/prisma';
 import { CartDto } from '@/domain/dtos';
 import { CartEntity } from '@/domain/entities/cart.entity';
-import { CartRepository } from '@/infrastructure/repositories/cart.repository';
 import { auth } from '@/infrastructure/auth/auth';
+import { CartService } from '@/application/services/cart/cart.service';
 
 export async function POST(request: Request): Promise<NextResponse> {
 
@@ -26,8 +25,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ sucess: false });
   }
   const cart = cartCreateResult.value;
-  const cartRepository = new CartRepository(prisma);
-  const result = await cartRepository.save(cart);
+  const result = await CartService.save(cart);
   if (!result.success) {
     return NextResponse.json({ sucess: false }, { status: 500 });
   }

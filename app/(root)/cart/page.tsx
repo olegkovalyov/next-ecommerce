@@ -52,7 +52,7 @@ const CartPage = (): ReactElement => {
         <div className="lg:col-span-1">
           <CartSummary
             cartDto={cartDto}
-            isGuest={true}
+            isGuest={!isAuthenticated()}
           />
         </div>
       </div>

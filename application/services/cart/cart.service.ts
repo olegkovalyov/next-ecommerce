@@ -2,6 +2,8 @@ import { CartEntity } from '@/domain/entities/cart.entity';
 import { ProductEntity } from '@/domain/entities/product.entity';
 import { Result, success, failure } from '@/lib/result';
 import { CartDto } from '@/domain/dtos';
+import { CartRepository } from '@/infrastructure/repositories/cart.repository';
+import { prisma } from '@/infrastructure/prisma/prisma';
 
 export class CartService {
   constructor() {
@@ -69,5 +71,17 @@ export class CartService {
     } catch (error) {
       return failure(new Error('Failed to clear cart'));
     }
+  }
+
+  static async loadByUserId(userId: string): Promise<Result<CartEntity>> {
+    const cartRepository = new CartRepository(prisma);
+    const cartResult = await cartRepository.findByUserId(userId);
+    return cartResult;
+  }
+
+  static async save(cart: CartEntity): Promise<Result<CartEntity>> {
+    const cartRepository = new CartRepository(prisma);
+    const result = await cartRepository.save(cart);
+    return result;
   }
 }

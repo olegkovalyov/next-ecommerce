@@ -1,8 +1,7 @@
 import { auth } from '@/infrastructure/auth/auth';
-import { CartRepository } from '@/infrastructure/repositories/cart.repository';
-import { prisma } from '@/infrastructure/prisma/prisma';
 import { CartDto } from '@/domain/dtos';
 import { failure, Result, success } from '@/lib/result';
+import { CartService } from '@/application/services/cart/cart.service';
 
 export async function sync(): Promise<Result<CartDto>> {
   const user = (await auth())?.user;
@@ -10,8 +9,7 @@ export async function sync(): Promise<Result<CartDto>> {
     return failure(new Error('Not authorised'));
   }
 
-  const cartRepository = new CartRepository(prisma);
-  const cartResult = await cartRepository.findByUserId(user.id);
+  const cartResult = await CartService.loadByUserId(user.id);
   if (!cartResult.success) {
     return failure(new Error('No cart'));
   }

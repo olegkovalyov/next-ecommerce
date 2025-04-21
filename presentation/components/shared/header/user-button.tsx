@@ -10,7 +10,7 @@ import {
 } from '@/presentation/components/ui/dropdown-menu';
 import { UserIcon } from 'lucide-react';
 import { ReactElement } from 'react';
-import { SignOutButton } from '@/presentation/components/shared/header/sign-out-buttom';
+import { SignOutButton } from '@/presentation/components/shared/header/sign-out-button';
 
 declare module "next-auth" {
   interface Session {

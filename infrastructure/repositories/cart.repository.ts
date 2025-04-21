@@ -68,9 +68,7 @@ export class CartRepository {
             connect: { id: prismaCart.user.connect.id }
           } : undefined,
           items: {
-            deleteMany: {
-              cartId: cart.id
-            },
+            deleteMany: {},
             create: prismaItems.map(item => ({
               productId: item.productId,
               quantity: item.quantity,

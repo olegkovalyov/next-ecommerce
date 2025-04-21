@@ -39,7 +39,7 @@ const ShippingAddressForm = ({ address }: { address: ShippingAddress | null }) =
       const res = await updateUserAddress(values);
 
       if (!res.success) {
-        showError(res.message);
+        showError(res.message as string);
         return;
       }
 

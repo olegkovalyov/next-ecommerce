@@ -1,6 +1,7 @@
 import { OrderItemEntity } from '@/domain/entities/order-item.entity';
 import { failure, Result, success } from '@/lib/result';
-import { OrderDto, OrderItemDto, ShippingAddress, PaymentResult } from '@/domain/dtos';
+import { OrderDto, OrderItemDto,PaymentResult } from '@/domain/dtos';
+import { ShippingAddress } from '@/lib/contracts/shipping-address';
 
 export class OrderEntity {
   public readonly id: string;
@@ -150,4 +151,4 @@ export class OrderEntity {
     }
     return success(void 0);
   }
-} 
+}

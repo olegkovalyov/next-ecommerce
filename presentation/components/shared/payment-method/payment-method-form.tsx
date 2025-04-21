@@ -42,7 +42,7 @@ const PaymentMethodForm = ({
       const res = await updateUserPaymentMethod(values);
 
       if (!res.success) {
-        showError(res.message);
+        showError(res.message as string);
         return;
       }
 

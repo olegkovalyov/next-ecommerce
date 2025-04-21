@@ -17,10 +17,12 @@ const PaymentMethodPage = async (): Promise<ReactElement> => {
 
   const user = await getUserById(userId);
 
+  const paymentMethod = user.paymentMethod as string|null;
+
   return (
     <>
       <CheckoutSteps current={2} />
-      <PaymentMethodForm preferredPaymentMethod={user.paymentMethod} />
+      <PaymentMethodForm preferredPaymentMethod={paymentMethod} />
     </>
   );
 };

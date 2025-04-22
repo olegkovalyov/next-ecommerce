@@ -27,10 +27,7 @@ describe('ProductRepository Integration Tests', () => {
   describe('findById', () => {
     it('should return null when product does not exist', async () => {
       const result = await repository.findById('00000000-0000-0000-0000-000000000000');
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.value).toBeNull();
-      }
+      expect(result.success).toBe(false);
     });
 
     it('should return product when it exists', async () => {
@@ -72,10 +69,7 @@ describe('ProductRepository Integration Tests', () => {
   describe('findBySlug', () => {
     it('should return null when product does not exist', async () => {
       const result = await repository.findBySlug('non-existent-slug');
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.value).toBeNull();
-      }
+      expect(result.success).toBe(false);
     });
 
     it('should return product when it exists', async () => {
@@ -235,4 +229,4 @@ describe('ProductRepository Integration Tests', () => {
       expect(deletedProduct).toBeNull();
     });
   });
-}); 
+});

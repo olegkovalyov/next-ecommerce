@@ -7,25 +7,25 @@ export class ProductRepository {
   constructor(private readonly prisma: PrismaClient) {
   }
 
-  async findById(id: string): Promise<Result<ProductEntity | null>> {
+  async findById(id: string): Promise<Result<ProductEntity>> {
     const product = await this.prisma.product.findUnique({
       where: { id },
     });
 
     if (!product) {
-      return success(null);
+      return failure(new Error('Product not found'));
     }
 
     return ProductEntity.fromDto(ProductMapper.toDto(product));
   }
 
-  async findBySlug(slug: string): Promise<Result<ProductEntity | null>> {
+  async findBySlug(slug: string): Promise<Result<ProductEntity>> {
     const product = await this.prisma.product.findUnique({
       where: { slug },
     });
 
     if (!product) {
-      return success(null);
+      return failure(new Error('Product not found'));
     }
 
     return ProductEntity.fromDto(ProductMapper.toDto(product));

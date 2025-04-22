@@ -58,7 +58,7 @@ export class OrderRepository {
       const { order: prismaOrder, items: prismaItems } = OrderMapper.toPrismaWithItems(order.toDto());
 
       // First, create or update the order
-      const data = await this.prisma.order.upsert({
+      await this.prisma.order.upsert({
         where: { id: order.id },
         create: {
           id: order.id,

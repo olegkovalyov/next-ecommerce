@@ -87,10 +87,7 @@ describe('CartRepository Integration Tests', () => {
   describe('findByUserId', () => {
     it('should return null when cart does not exist', async () => {
       const result = await repository.findByUserId(testUserId);
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.value).toBeNull();
-      }
+      expect(result.success).toBe(false);
     });
 
     it('should return cart when it exists', async () => {

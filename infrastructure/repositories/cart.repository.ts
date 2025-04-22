@@ -26,7 +26,7 @@ export class CartRepository {
     }
   }
 
-  async findByUserId(userId: string): Promise<Result<CartEntity | null>> {
+  async findByUserId(userId: string): Promise<Result<CartEntity>> {
     try {
       const data = await this.prisma.cart.findFirst({
         where: { userId },
@@ -40,7 +40,7 @@ export class CartRepository {
       });
 
       if (!data) {
-        return { success: true, value: null };
+        return failure(new Error('Cart not found'));
       }
 
       return CartEntity.fromDto(CartMapper.toDto(data as unknown as CartWithItems));

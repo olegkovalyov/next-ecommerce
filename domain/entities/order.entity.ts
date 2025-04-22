@@ -151,4 +151,8 @@ export class OrderEntity {
     }
     return success(void 0);
   }
+
+  getOrderItemsArray(): OrderItemEntity[] {
+    return Array.from(this.orderItems.values());
+  }
 }

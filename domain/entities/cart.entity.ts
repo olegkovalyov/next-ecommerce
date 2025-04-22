@@ -13,7 +13,6 @@ export class CartEntity {
     this.id = cartData.id ? cartData.id : crypto.randomUUID();
     this.userId = cartData.userId ?? null;
     this.taxPercentage = cartData.taxPercentage;
-    this.initCartItemsFromDtos(cartData.cartItemDtos);
   }
 
   public static fromDto(cartData: CartDto): Result<CartEntity> {
@@ -181,5 +180,9 @@ export class CartEntity {
       this.cartItems.set(cartItem.value.productId, cartItem.value);
     }
     return success(void 0);
+  }
+
+  getCartItemsArray(): CartItemEntity[] {
+    return Array.from(this.cartItems.values());
   }
 }

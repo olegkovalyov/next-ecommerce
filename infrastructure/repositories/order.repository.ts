@@ -57,11 +57,12 @@ export class OrderRepository {
     try {
       const { order: prismaOrder, items: prismaItems } = OrderMapper.toPrismaWithItems(order.toDto());
 
+      // First, create or update the order
       const data = await this.prisma.order.upsert({
         where: { id: order.id },
         create: {
           id: order.id,
-          user: prismaOrder.user,
+          userId: order.userId,
           shippingAddress: prismaOrder.shippingAddress,
           paymentMethod: prismaOrder.paymentMethod,
           paymentResult: prismaOrder.paymentResult,
@@ -73,19 +74,8 @@ export class OrderRepository {
           paidAt: prismaOrder.paidAt,
           isDelivered: prismaOrder.isDelivered,
           deliveredAt: prismaOrder.deliveredAt,
-          OrderItem: {
-            create: prismaItems.map(item => ({
-              productId: item.productId,
-              qty: item.qty,
-              price: item.price,
-              name: item.name,
-              slug: item.slug,
-              image: item.image,
-            })),
-          },
         },
         update: {
-          user: prismaOrder.user,
           shippingAddress: prismaOrder.shippingAddress,
           paymentMethod: prismaOrder.paymentMethod,
           paymentResult: prismaOrder.paymentResult,
@@ -97,17 +87,6 @@ export class OrderRepository {
           paidAt: prismaOrder.paidAt,
           isDelivered: prismaOrder.isDelivered,
           deliveredAt: prismaOrder.deliveredAt,
-          OrderItem: {
-            deleteMany: {},
-            create: prismaItems.map(item => ({
-              productId: item.productId,
-              qty: item.qty,
-              price: item.price,
-              name: item.name,
-              slug: item.slug,
-              image: item.image,
-            })),
-          },
         },
         include: {
           OrderItem: {
@@ -118,7 +97,44 @@ export class OrderRepository {
         },
       });
 
-      return OrderEntity.fromDto(OrderMapper.toDto(data as unknown as OrderWithItems));
+      // Then, handle the items
+      if (prismaItems.length > 0) {
+        // Delete existing items
+        await this.prisma.orderItem.deleteMany({
+          where: { orderId: order.id },
+        });
+
+        // Create new items
+        await this.prisma.orderItem.createMany({
+          data: prismaItems.map(item => ({
+            orderId: order.id,
+            productId: item.productId,
+            qty: item.qty,
+            price: item.price,
+            name: item.name,
+            slug: item.slug,
+            image: item.image,
+          })),
+        });
+      }
+
+      // Fetch the updated order with items
+      const updatedOrder = await this.prisma.order.findUnique({
+        where: { id: order.id },
+        include: {
+          OrderItem: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      });
+
+      if (!updatedOrder) {
+        return failure(new Error('Failed to fetch updated order'));
+      }
+
+      return OrderEntity.fromDto(OrderMapper.toDto(updatedOrder as unknown as OrderWithItems));
     } catch (error) {
       console.error('Error saving order:', error);
       return failure(new Error('Failed to save order'));

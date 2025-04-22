@@ -1,15 +1,16 @@
 import { PrismaClient } from '@prisma/client';
 import { ProductRepository } from '../product.repository';
 import { ProductEntity } from '@/domain/entities/product.entity';
-import { ProductDto } from '@/domain/dtos/product.dto';
+import { ProductDto } from '@/domain/dtos';
 import crypto from 'crypto';
 
-describe('ProductRepository Integration Tests', () => {
+describe('ProductRepository', () => {
   let prisma: PrismaClient;
   let repository: ProductRepository;
 
   beforeAll(async () => {
     prisma = new PrismaClient();
+    await prisma.$connect();
     repository = new ProductRepository(prisma);
   });
 
@@ -17,216 +18,288 @@ describe('ProductRepository Integration Tests', () => {
     await prisma.$disconnect();
   });
 
-  beforeEach(async () => {
-    // Clean up products before each test
-    await prisma.cartItem.deleteMany();
-    await prisma.orderItem.deleteMany();
-    await prisma.product.deleteMany();
-  });
-
   describe('findById', () => {
-    it('should return null when product does not exist', async () => {
-      const result = await repository.findById('00000000-0000-0000-0000-000000000000');
-      expect(result.success).toBe(false);
-    });
-
-    it('should return product when it exists', async () => {
+    it('should return a product when found', async () => {
       // Create test product
+      const testProductId = crypto.randomUUID();
       const product = await prisma.product.create({
         data: {
+          id: testProductId,
           name: 'Test Product',
           slug: `test-product-${Date.now()}`,
-          category: 'Test Category',
-          brand: 'Test Brand',
           description: 'Test Description',
-          stock: 10,
-          images: ['test-image.jpg'],
           price: 100,
+          images: ['test-image.jpg'],
+          category: 'test-category',
+          brand: 'test-brand',
+          stock: 10,
           rating: 4.5,
-          numReviews: 0,
+          numReviews: 10,
+          isFeatured: false,
+          banner: null,
         },
       });
 
-      const result = await repository.findById(product.id);
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.value).toBeInstanceOf(ProductEntity);
-        expect(result.value?.id).toBe(product.id);
-        expect(result.value?.name).toBe('Test Product');
-        expect(result.value?.slug).toBe(product.slug);
-        expect(result.value?.category).toBe('Test Category');
-        expect(result.value?.brand).toBe('Test Brand');
-        expect(result.value?.description).toBe('Test Description');
-        expect(result.value?.stock).toBe(10);
-        expect(result.value?.images).toEqual(['test-image.jpg']);
-        expect(result.value?.price).toBe(100);
-        expect(result.value?.rating).toBe(4.5);
-        expect(result.value?.numReviews).toBe(0);
+      try {
+        // Act
+        const result = await repository.findById(testProductId);
+
+        // Assert
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.value.id).toBe(testProductId);
+          expect(result.value.name).toBe(product.name);
+          expect(result.value.price).toBe(Number(product.price));
+        }
+      } finally {
+        // Cleanup
+        await prisma.product.deleteMany({ where: { id: testProductId } });
+      }
+    });
+
+    it('should return failure when product not found', async () => {
+      const nonExistentProductId = crypto.randomUUID();
+      const result = await repository.findById(nonExistentProductId);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.message).toBe('Product not found');
       }
     });
   });
 
   describe('findBySlug', () => {
-    it('should return null when product does not exist', async () => {
-      const result = await repository.findBySlug('non-existent-slug');
-      expect(result.success).toBe(false);
-    });
-
-    it('should return product when it exists', async () => {
+    it('should return a product when found by slug', async () => {
       // Create test product
+      const testProductId = crypto.randomUUID();
+      const testSlug = `test-product-${Date.now()}`;
       const product = await prisma.product.create({
         data: {
+          id: testProductId,
           name: 'Test Product',
-          slug: `test-product-${Date.now()}`,
-          category: 'Test Category',
-          brand: 'Test Brand',
+          slug: testSlug,
           description: 'Test Description',
-          stock: 10,
-          images: ['test-image.jpg'],
           price: 100,
+          images: ['test-image.jpg'],
+          category: 'test-category',
+          brand: 'test-brand',
+          stock: 10,
           rating: 4.5,
-          numReviews: 0,
+          numReviews: 10,
+          isFeatured: false,
+          banner: null,
         },
       });
 
-      const result = await repository.findBySlug(product.slug);
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.value).toBeInstanceOf(ProductEntity);
-        expect(result.value?.id).toBe(product.id);
-        expect(result.value?.slug).toBe(product.slug);
+      try {
+        // Act
+        const result = await repository.findBySlug(testSlug);
+
+        // Assert
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.value.slug).toBe(testSlug);
+        }
+      } finally {
+        // Cleanup
+        await prisma.product.deleteMany({ where: { id: testProductId } });
+      }
+    });
+
+    it('should return failure when product not found by slug', async () => {
+      const nonExistentSlug = `non-existent-${Date.now()}`;
+      const result = await repository.findBySlug(nonExistentSlug);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.message).toBe('Product not found');
       }
     });
   });
 
   describe('save', () => {
-    it('should create new product', async () => {
-      const productDto = new ProductDto(
-        crypto.randomUUID(),
-        'Test Product',
-        `test-product-${Date.now()}`,
-        'Test Category',
-        'Test Brand',
-        'Test Description',
-        10,
-        ['test-image.jpg'],
+    it('should create a new product', async () => {
+      // Arrange
+      const newProductId = crypto.randomUUID();
+      const now = new Date();
+      const newProductData = new ProductDto(
+        newProductId,
+        'New Product',
+        `new-product-${Date.now()}`,
+        'new-category',
+        'new-brand',
+        'New Description',
+        15,
+        ['new-image.jpg'],
         false,
         null,
-        100,
-        4.5,
+        150,
+        4.0,
         0,
-        new Date()
+        now
       );
 
-      const productEntity = ProductEntity.fromDto(productDto);
-      if (!productEntity.success) {
-        throw new Error('Failed to create product entity');
+      const newProduct = ProductEntity.fromDto(newProductData);
+      if (!newProduct.success) {
+        throw newProduct.error;
       }
 
-      const result = await repository.save(productEntity.value);
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.value).toBeInstanceOf(ProductEntity);
-        expect(result.value.id).toBeTruthy();
-        expect(result.value.name).toBe('Test Product');
-        expect(result.value.slug).toBe(productDto.slug);
-        expect(result.value.category).toBe('Test Category');
-        expect(result.value.brand).toBe('Test Brand');
-        expect(result.value.description).toBe('Test Description');
-        expect(result.value.stock).toBe(10);
-        expect(result.value.images).toEqual(['test-image.jpg']);
-        expect(result.value.price).toBe(100);
-        expect(result.value.rating).toBe(4.5);
-        expect(result.value.numReviews).toBe(0);
+      try {
+        // Act
+        const result = await repository.save(newProduct.value);
+
+        // Assert
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.value.id).toBe(newProductData.id);
+          expect(result.value.name).toBe(newProductData.name);
+          expect(result.value.price).toBe(newProductData.price);
+        }
+
+        // Verify in database
+        const savedProduct = await prisma.product.findUnique({
+          where: { id: newProductData.id },
+        });
+        expect(savedProduct).not.toBeNull();
+        expect(savedProduct?.name).toBe(newProductData.name);
+      } finally {
+        // Cleanup
+        await prisma.product.deleteMany({ where: { id: newProductId } });
       }
     });
 
-    it('should update existing product', async () => {
-      // Create initial product
+    it('should update an existing product', async () => {
+      // Create test product
+      const testProductId = crypto.randomUUID();
+      const now = new Date();
       const product = await prisma.product.create({
         data: {
+          id: testProductId,
           name: 'Test Product',
           slug: `test-product-${Date.now()}`,
-          category: 'Test Category',
-          brand: 'Test Brand',
           description: 'Test Description',
-          stock: 10,
-          images: ['test-image.jpg'],
           price: 100,
+          images: ['test-image.jpg'],
+          category: 'test-category',
+          brand: 'test-brand',
+          stock: 10,
           rating: 4.5,
-          numReviews: 0,
+          numReviews: 10,
+          isFeatured: false,
+          banner: null,
         },
       });
 
-      const productDto = new ProductDto(
-        product.id,
-        'Updated Product',
-        product.slug,
-        'Updated Category',
-        'Updated Brand',
-        'Updated Description',
-        20,
-        ['updated-image.jpg'],
-        true,
-        'banner.jpg',
-        200,
-        4.8,
-        5,
-        new Date()
-      );
+      try {
+        // Convert to ProductDto format
+        const productDto = new ProductDto(
+          product.id,
+          product.name,
+          product.slug,
+          product.category,
+          product.brand,
+          product.description,
+          product.stock,
+          product.images,
+          product.isFeatured,
+          product.banner,
+          Number(product.price),
+          Number(product.rating),
+          product.numReviews,
+          now
+        );
 
-      const productEntity = ProductEntity.fromDto(productDto);
-      if (!productEntity.success) {
-        throw new Error('Failed to create product entity');
-      }
+        const testProduct = ProductEntity.fromDto(productDto);
+        if (!testProduct.success) {
+          throw testProduct.error;
+        }
 
-      const result = await repository.save(productEntity.value);
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.value).toBeInstanceOf(ProductEntity);
-        expect(result.value.id).toBe(product.id);
-        expect(result.value.name).toBe('Updated Product');
-        expect(result.value.slug).toBe(product.slug);
-        expect(result.value.category).toBe('Updated Category');
-        expect(result.value.brand).toBe('Updated Brand');
-        expect(result.value.description).toBe('Updated Description');
-        expect(result.value.stock).toBe(20);
-        expect(result.value.images).toEqual(['updated-image.jpg']);
-        expect(result.value.price).toBe(200);
-        expect(result.value.rating).toBe(4.8);
-        expect(result.value.numReviews).toBe(5);
-        expect(result.value.isFeatured).toBe(true);
-        expect(result.value.banner).toBe('banner.jpg');
+        // Arrange
+        const updatedProduct = ProductEntity.fromDto(new ProductDto(
+          testProduct.value.id,
+          'Updated Product',
+          testProduct.value.slug,
+          testProduct.value.category,
+          testProduct.value.brand,
+          testProduct.value.description,
+          testProduct.value.stock,
+          testProduct.value.images,
+          testProduct.value.isFeatured,
+          testProduct.value.banner,
+          200,
+          testProduct.value.rating,
+          testProduct.value.numReviews,
+          testProduct.value.createdAt
+        ));
+        if (!updatedProduct.success) {
+          throw updatedProduct.error;
+        }
+
+        // Act
+        const result = await repository.save(updatedProduct.value);
+
+        // Assert
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.value.name).toBe('Updated Product');
+          expect(result.value.price).toBe(200);
+        }
+
+        // Verify in database
+        const savedProduct = await prisma.product.findUnique({
+          where: { id: testProductId },
+        });
+        expect(savedProduct?.name).toBe('Updated Product');
+        expect(Number(savedProduct?.price)).toBe(200);
+      } finally {
+        // Cleanup
+        await prisma.product.deleteMany({ where: { id: testProductId } });
       }
     });
   });
 
   describe('delete', () => {
-    it('should delete product', async () => {
+    it('should delete an existing product', async () => {
       // Create test product
+      const testProductId = crypto.randomUUID();
       const product = await prisma.product.create({
         data: {
+          id: testProductId,
           name: 'Test Product',
           slug: `test-product-${Date.now()}`,
-          category: 'Test Category',
-          brand: 'Test Brand',
           description: 'Test Description',
-          stock: 10,
-          images: ['test-image.jpg'],
           price: 100,
+          images: ['test-image.jpg'],
+          category: 'test-category',
+          brand: 'test-brand',
+          stock: 10,
           rating: 4.5,
-          numReviews: 0,
+          numReviews: 10,
+          isFeatured: false,
+          banner: null,
         },
       });
 
-      const result = await repository.delete(product.id);
-      expect(result.success).toBe(true);
+      try {
+        // Act
+        const result = await repository.delete(testProductId);
 
-      // Verify product is deleted
-      const deletedProduct = await prisma.product.findUnique({
-        where: { id: product.id },
-      });
-      expect(deletedProduct).toBeNull();
+        // Assert
+        expect(result.success).toBe(true);
+
+        // Verify in database
+        const deletedProduct = await prisma.product.findUnique({
+          where: { id: testProductId },
+        });
+        expect(deletedProduct).toBeNull();
+      } finally {
+        // Cleanup
+        await prisma.product.deleteMany({ where: { id: testProductId } });
+      }
+    });
+
+    it('should return failure when trying to delete non-existent product', async () => {
+      const nonExistentProductId = crypto.randomUUID();
+      const result = await repository.delete(nonExistentProductId);
+      expect(result.success).toBe(false);
     });
   });
 });

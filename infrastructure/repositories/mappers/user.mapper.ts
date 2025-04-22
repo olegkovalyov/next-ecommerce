@@ -44,7 +44,7 @@ export class UserMapper {
       image: userDto.image ?? null,
       password: userDto.password ?? null,
       role: userDto.role,
-      address: userDto.address ?? null,
+      address: userDto.address ?? '',
       paymentMethod: userDto.paymentMethod ?? null,
     };
   }

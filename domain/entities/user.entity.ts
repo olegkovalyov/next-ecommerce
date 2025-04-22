@@ -1,56 +1,64 @@
 import { UserDto } from '@/domain/dtos';
-import { failure, Result, success } from '@/lib/result';
+import { failure, success } from '@/lib/result';
 
 export class UserEntity {
-  public readonly id: string;
-  public readonly name: string;
-  public readonly email: string;
-  public readonly image: string;
-  public readonly role: string;
-  public readonly address: string;
-  public readonly paymentMethod: string;
-  public readonly createdAt: Date;
-  public readonly updatedAt: Date;
+  private constructor(
+    public readonly id: string,
+    public readonly name: string,
+    public readonly email: string,
+    public readonly image: string | null,
+    public readonly password: string,
+    public readonly role: string,
+    public readonly address: string | null,
+    public readonly paymentMethod: string | null,
+    public readonly createdAt: Date,
+    public readonly updatedAt: Date
+  ) {}
 
-  private constructor(userData: UserDto) {
-    this.id = userData.id;
-    this.name = userData.name;
-    this.email = userData.email;
-    this.image = userData.image ?? '';
-    this.role = userData.role;
-    this.address = userData.address ?? '';
-    this.paymentMethod = userData.paymentMethod ?? '';
-    this.createdAt = userData.createdAt ?? new Date();
-    this.updatedAt = userData.updatedAt ?? new Date();
-  }
-
-  public static fromDto(userData: UserDto): Result<UserEntity> {
-    try {
-      if (!userData.id) {
-        return failure(new Error('User must have an ID'));
-      }
-
-      if (!userData.email) {
-        return failure(new Error('User must have an email'));
-      }
-
-      const user = new UserEntity(userData);
-      return success(user);
-    } catch (error) {
-      return failure(error instanceof Error ? error : new Error('Failed to create user from DTO'));
+  static fromDto(dto: UserDto) {
+    if (!dto.id) {
+      return failure(new Error('User must have an ID'));
     }
+    if (!dto.name) {
+      return failure(new Error('User must have a name'));
+    }
+    if (!dto.email) {
+      return failure(new Error('User must have an email'));
+    }
+    if (!dto.password) {
+      return failure(new Error('User must have a password'));
+    }
+    if (!dto.role) {
+      return failure(new Error('User must have a role'));
+    }
+
+    return success(
+      new UserEntity(
+        dto.id,
+        dto.name,
+        dto.email,
+        dto.image ?? null,
+        dto.password,
+        dto.role,
+        dto.address ?? null,
+        dto.paymentMethod ?? null,
+        dto.createdAt,
+        dto.updatedAt
+      )
+    );
   }
 
-  public static create(userData: UserDto): Result<UserEntity> {
-    return UserEntity.fromDto(userData);
+  static create(dto: UserDto) {
+    return this.fromDto(dto);
   }
 
-  public toDto(): UserDto {
+  toDto(): UserDto {
     return {
       id: this.id,
       name: this.name,
       email: this.email,
       image: this.image,
+      password: this.password,
       role: this.role,
       address: this.address,
       paymentMethod: this.paymentMethod,
@@ -65,10 +73,10 @@ export class UserEntity {
   }
 
   public hasAddress(): boolean {
-    return this.address !== null;
+    return this.address !== null && this.address !== '';
   }
 
   public hasPaymentMethod(): boolean {
-    return this.paymentMethod !== null;
+    return this.paymentMethod !== null && this.paymentMethod !== '';
   }
 }

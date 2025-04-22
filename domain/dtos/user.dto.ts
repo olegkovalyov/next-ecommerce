@@ -5,7 +5,7 @@ export interface UserDto {
   image?: string | null;
   password?: string | null;
   role: string;
-  address?: any | null;
+  address?: string | null;
   paymentMethod?: string | null;
   createdAt: Date;
   updatedAt: Date;

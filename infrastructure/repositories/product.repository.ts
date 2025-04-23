@@ -1,6 +1,6 @@
 import { ProductEntity } from '@/domain/entities/product.entity';
 import { ProductMapper } from './mappers/product.mapper';
-import { failure, Result } from '@/lib/result';
+import { failure, Result, success } from '@/lib/result';
 import { PrismaClient } from '@prisma/client';
 
 export class ProductRepository {
@@ -38,11 +38,12 @@ export class ProductRepository {
     try {
       const savedProduct = await this.prisma.product.upsert({
         where: { id: productDto.id },
-        create: prismaData,
+        create: { id: productDto.id, ...prismaData },
         update: prismaData,
       });
       return ProductEntity.fromDto(ProductMapper.toDto(savedProduct));
     } catch (error: unknown) {
+      console.error('Failed to save product:', error);
       return failure(new Error('Failed to save product'));
     }
   }
@@ -50,8 +51,8 @@ export class ProductRepository {
   async delete(id: string): Promise<Result<ProductEntity>> {
     const product = await this.findById(id);
 
-    if (!product.success) {
-      return failure(new Error('Failed to delete product'));
+    if (!product.success || !product.value) {
+      return failure(new Error('Product not found'));
     }
 
     try {
@@ -59,7 +60,7 @@ export class ProductRepository {
         where: { id },
       });
 
-      return product;
+      return success(product.value);
     } catch (error: unknown) {
       return failure(new Error('Failed to delete product'));
     }

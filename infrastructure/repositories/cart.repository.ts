@@ -28,7 +28,7 @@ export class CartRepository {
 
   async findByUserId(userId: string): Promise<Result<CartEntity>> {
     try {
-      const data = await this.prisma.cart.findFirstOrThrow({
+      const data = await this.prisma.cart.findFirst({
         where: { userId },
         include: {
           items: {
@@ -39,6 +39,10 @@ export class CartRepository {
         },
       });
 
+      if (!data) {
+        return failure(new Error('Cart not found'));
+      }
+
       return CartEntity.fromDto(CartMapper.toDto(data as unknown as CartWithItems));
     } catch (error) {
       return failure(new Error('Cart not found'));
@@ -47,34 +51,16 @@ export class CartRepository {
 
   async save(cart: CartEntity): Promise<Result<CartEntity>> {
     try {
-      const { cart: prismaCart, items: prismaItems } = CartMapper.toPrismaWithItems(cart.toDto());
+      const { items: prismaItems } = CartMapper.toPrismaWithItems(cart.toDto());
 
-      const data = await this.prisma.cart.upsert({
+      // First, create or update the cart
+       await this.prisma.cart.upsert({
         where: { id: cart.id },
         create: {
           id: cart.id,
-          user: prismaCart.user ? {
-            connect: { id: prismaCart.user.connect.id }
-          } : undefined,
-          items: {
-            create: prismaItems.map(item => ({
-              productId: item.productId,
-              quantity: item.quantity,
-            })),
-          },
+          userId: cart.userId,
         },
-        update: {
-          user: prismaCart.user ? {
-            connect: { id: prismaCart.user.connect.id }
-          } : undefined,
-          items: {
-            deleteMany: {},
-            create: prismaItems.map(item => ({
-              productId: item.productId,
-              quantity: item.quantity,
-            })),
-          },
-        },
+        update: {},
         include: {
           items: {
             include: {
@@ -84,7 +70,40 @@ export class CartRepository {
         },
       });
 
-      return CartEntity.fromDto(CartMapper.toDto(data as unknown as CartWithItems));
+      // Then, handle the items
+      if (prismaItems.length > 0) {
+        // Delete existing items
+        await this.prisma.cartItem.deleteMany({
+          where: { cartId: cart.id },
+        });
+
+        // Create new items
+        await this.prisma.cartItem.createMany({
+          data: prismaItems.map(item => ({
+            cartId: cart.id,
+            productId: item.productId,
+            quantity: item.quantity,
+          })),
+        });
+      }
+
+      // Fetch the updated cart with items
+      const updatedCart = await this.prisma.cart.findUnique({
+        where: { id: cart.id },
+        include: {
+          items: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      });
+
+      if (!updatedCart) {
+        return failure(new Error('Failed to fetch updated cart'));
+      }
+
+      return CartEntity.fromDto(CartMapper.toDto(updatedCart as unknown as CartWithItems));
     } catch (error) {
       // In test environment, errors are expected and handled by the test cases
       if (process.env.NODE_ENV !== 'test') {

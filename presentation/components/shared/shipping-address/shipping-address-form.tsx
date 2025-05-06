@@ -43,7 +43,7 @@ const ShippingAddressForm = ({ address }: { address: ShippingAddress | null }) =
         return;
       }
 
-      router.push('/payment-method');
+      router.push('/place-order');
     });
   };
 

@@ -16,6 +16,8 @@ const PlaceOrderForm = () => {
     const res = await createOrder();
     console.log(res);
 
+    router.push('/checkout');
+
     // if (res.redirectTo) {
     //   router.push(res.redirectTo);
     // }

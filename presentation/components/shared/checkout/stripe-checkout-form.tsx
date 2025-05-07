@@ -45,6 +45,17 @@ const StripeCheckoutForm = ({ cartId }: StripeCheckoutFormProps) => {
     setIsLoading(true);
 
     try {
+      // Prepare cart items to send to the server
+      const cartItems = cart.getCartItemsArray().map(item => ({
+        quantity: item.quantity,
+        product: {
+          id: item.productId,
+          name: item.product.name,
+          price: Number(item.product.price),
+          images: item.product.images
+        }
+      }));
+
       // Create payment session on the server
       const response = await fetch('/api/stripe', {
         method: 'POST',
@@ -54,6 +65,7 @@ const StripeCheckoutForm = ({ cartId }: StripeCheckoutFormProps) => {
         body: JSON.stringify({
           cartId,
           totalAmount,
+          cartItems,
         }),
       });
 

@@ -1,4 +1,4 @@
-import { ProductDto } from '@/domain/dtos';
+import { ProductDto } from '../dtos';
 import { failure, Result, success } from '@/lib/result';
 
 export class ProductEntity {
@@ -16,6 +16,7 @@ export class ProductEntity {
   private readonly _rating: number;
   private readonly _numReviews: number;
   private readonly _createdAt: Date;
+  private readonly _updatedAt: Date;
 
   private constructor(product: ProductDto) {
     this._id = product.id ?? '';
@@ -31,7 +32,8 @@ export class ProductEntity {
     this._price = product.price;
     this._rating = product.rating;
     this._numReviews = product.numReviews;
-    this._createdAt = product.createdAt;
+    this._createdAt = product.createdAt ?? new Date();
+    this._updatedAt = product.updatedAt ?? new Date();
   }
 
   public static fromDto(productDto: ProductDto): Result<ProductEntity> {
@@ -90,6 +92,7 @@ export class ProductEntity {
       rating: this._rating,
       numReviews: this._numReviews,
       createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
     };
   }
 
@@ -157,5 +160,9 @@ export class ProductEntity {
 
   public get createdAt(): Date {
     return this._createdAt;
+  }
+
+  public get updatedAt(): Date {
+    return this._updatedAt;
   }
 }

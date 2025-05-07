@@ -4,8 +4,8 @@ import { failure, Result, success } from '@/lib/result';
 
 export class CartItemEntity {
   private readonly _id: string = '';
-  private readonly _cartId: string;
-  private readonly _productId: string;
+  private readonly _cartId: string | null;
+  private readonly _productId: string | null;
   private _quantity: number;
   private readonly _product: ProductEntity;
 
@@ -58,7 +58,7 @@ export class CartItemEntity {
     return {
       id: this._id,
       cartId: this._cartId,
-      productId: this._productId,
+      productId: this._productId ?? '',
       quantity: this._quantity,
       productDto: this._product.toDto(),
     };
@@ -85,11 +85,11 @@ export class CartItemEntity {
     return this._id;
   }
 
-  public get cartId(): string {
+  public get cartId(): string | null {
     return this._cartId;
   }
 
-  public get productId(): string {
+  public get productId(): string | null {
     return this._productId;
   }
 

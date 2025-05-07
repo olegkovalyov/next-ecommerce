@@ -28,10 +28,10 @@ describe('UserEntity', () => {
 
     it('should fail when ID is missing', () => {
       const invalidDto = { ...mockUserDto, id: '' };
-      const result = UserEntity.fromDto(invalidDto);
+      const result = UserEntity.fromDto(invalidDto as UserDto);
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.message).toBe('User must have an ID');
+        expect(result.error.message).toBe('User must have an ID for fromDto mapping');
       }
     });
 
@@ -55,10 +55,10 @@ describe('UserEntity', () => {
 
     it('should fail when password is missing', () => {
       const invalidDto = { ...mockUserDto, password: '' };
-      const result = UserEntity.fromDto(invalidDto);
+      const result = UserEntity.fromDto(invalidDto as UserDto);
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.message).toBe('User must have a password');
+        expect(result.error.message).toBe('User must have a password string');
       }
     });
 
@@ -73,19 +73,36 @@ describe('UserEntity', () => {
   });
 
   describe('create', () => {
-    it('should create a UserEntity from a valid DTO', () => {
-      const result = UserEntity.create(mockUserDto);
+    it('should create a UserEntity from a valid DTO', async () => {
+      const result = await UserEntity.create(mockUserDto);
       expect(result.success).toBe(true);
       if (result.success) {
         const user = result.value;
         expect(user).toBeInstanceOf(UserEntity);
-        expect(user.toDto()).toEqual(mockUserDto);
+
+        const dtoFromEntity = user.toDto();
+        // Compare all fields except password
+        expect(dtoFromEntity.id).toBe(mockUserDto.id);
+        expect(dtoFromEntity.name).toBe(mockUserDto.name);
+        expect(dtoFromEntity.email).toBe(mockUserDto.email);
+        expect(dtoFromEntity.image).toBe(mockUserDto.image);
+        expect(dtoFromEntity.role).toBe(mockUserDto.role);
+        expect(dtoFromEntity.address).toBe(mockUserDto.address);
+        expect(dtoFromEntity.paymentMethod).toBe(mockUserDto.paymentMethod);
+        // Compare date ISO strings to avoid potential instance mismatches
+        expect(dtoFromEntity.createdAt.toISOString()).toBe(mockUserDto.createdAt.toISOString());
+        expect(dtoFromEntity.updatedAt.toISOString()).toBe(mockUserDto.updatedAt.toISOString());
+
+        // Check password separately
+        expect(dtoFromEntity.password).not.toBe(mockUserDto.password!); // Hashed vs Plain
+        expect(dtoFromEntity.password!.length).toBeGreaterThan(mockUserDto.password!.length);
+        expect(await user.comparePassword(mockUserDto.password!)).toBe(true); // Check if plain password matches hashed
       }
     });
 
-    it('should fail when required fields are missing', () => {
+    it('should fail when required fields are missing', async () => {
       const invalidDto = { ...mockUserDto, name: '' };
-      const result = UserEntity.create(invalidDto);
+      const result = await UserEntity.create(invalidDto);
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.message).toBe('User must have a name');

@@ -35,5 +35,22 @@ services:
       timeout: 5s
       retries: 5
 
+  test_db:
+    image: postgres:latest
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpassword
+      POSTGRES_DB: next_ecommerce_test
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testuser -d next_ecommerce_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres_data:
+  postgres_test_data:

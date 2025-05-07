@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "outDir": "dist",
+    "noEmit": false,
+    "isolatedModules": false
+  },
+  "include": [
+    "infrastructure/db/repositories/__tests__/**/*.integration.ts",
+    "scripts/run-integration-tests.ts",
+    "infrastructure/db/setup-test-db.ts",
+    "infrastructure/db/test-db.ts"
+  ],
+  "exclude": ["node_modules", ".next", "dist"]
+} 

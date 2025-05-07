@@ -2,13 +2,11 @@
 
 import { signIn, signOut } from '@/infrastructure/auth/auth';
 import { hashSync } from 'bcrypt-ts-edge';
-import { PrismaClient } from '@prisma/client';
+import { db } from '@/infrastructure/db';
+import * as schema from '@/infrastructure/db/schema';
 import { signInFormSchema, signUpFormSchema } from '@/lib/validators/auth.validator';
 import { isRedirectError } from 'next/dist/client/components/redirect-error';
 import { formatError } from '@/lib/utils';
-
-// Create a non-extended Prisma client for user operations
-const rawPrisma = new PrismaClient();
 
 type SignInResponse = {
   success: boolean;
@@ -76,12 +74,11 @@ export async function signUpUser(
     const plainPassword = user.password;
     user.password = hashSync(user.password, 10);
 
-    await rawPrisma.user.create({
-      data: {
-        name: user.name,
-        email: user.email,
-        password: user.password,
-      },
+    await db.insert(schema.user).values({
+      id: crypto.randomUUID(),
+      name: user.name,
+      email: user.email,
+      password: user.password,
     });
 
     // Automatically sign in the user after registration

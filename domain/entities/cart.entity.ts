@@ -77,12 +77,17 @@ export class CartEntity {
       return failure(new Error('Cart item belongs to a different cart'));
     }
 
-    const existingItem = this.cartItems.get(cartItem.productId);
+    const productId = cartItem.productId;
+    if (!productId) {
+      return failure(new Error('Cart item must have a productId'));
+    }
+
+    const existingItem = this.cartItems.get(productId);
 
     if (existingItem) {
       existingItem.updateQuantity(cartItem.quantity);
     } else {
-      this.cartItems.set(cartItem.productId, cartItem);
+      this.cartItems.set(productId, cartItem);
     }
     return success(this);
   }
@@ -94,7 +99,12 @@ export class CartEntity {
       return failure(new Error('CartItem not found'));
     }
 
-    this.cartItems.delete(itemToDelete.productId);
+    const productId = itemToDelete.productId;
+    if (!productId) {
+      return failure(new Error('CartItem has no productId'));
+    }
+
+    this.cartItems.delete(productId);
     return success(this);
   }
 
@@ -177,7 +187,13 @@ export class CartEntity {
       if (!cartItem.success) {
         return failure(new Error(`Failed to initialize cart item: ${cartItem.error.message}`));
       }
-      this.cartItems.set(cartItem.value.productId, cartItem.value);
+
+      const productId = cartItem.value.productId;
+      if (!productId) {
+        return failure(new Error('Cart item must have a productId'));
+      }
+
+      this.cartItems.set(productId, cartItem.value);
     }
     return success(void 0);
   }

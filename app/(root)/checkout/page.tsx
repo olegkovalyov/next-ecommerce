@@ -21,11 +21,11 @@ const CheckoutPage = (): ReactElement => {
 
   useEffect(() => {
     // Check if user is authenticated
-    // if (!isAuthenticated()) {
-    //   toast.error('You need to sign in to complete your order');
-    //   router.push('/sign-in?callbackUrl=/checkout');
-    //   return;
-    // }
+    if (!isAuthenticated()) {
+      toast.error('You need to sign in to complete your order');
+      router.push('/sign-in?callbackUrl=/checkout');
+      return;
+    }
 
     // Check if there are items in the cart
     const cartDto = getCartDto();

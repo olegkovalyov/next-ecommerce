@@ -1,23 +1,22 @@
 import { ProductService } from '../product.service';
 import { ProductEntity } from '@/domain/entities/product.entity';
 import { ProductDto } from '@/domain/dtos/product.dto';
-import { ProductRepository } from '@/infrastructure/repositories/product.repository';
-import { prisma } from '@/infrastructure/prisma/prisma';
+import { DrizzleProductRepository } from '@/infrastructure/db/repositories/product.repository';
+import { db } from '@/infrastructure/db';
 
-jest.mock('@/infrastructure/repositories/product.repository');
-jest.mock('@/infrastructure/prisma/prisma', () => ({
-  prisma: {
-    product: {
-      findUnique: jest.fn(),
-      upsert: jest.fn(),
-      delete: jest.fn(),
-    },
+jest.mock('@/infrastructure/db/repositories/product.repository');
+jest.mock('@/infrastructure/db', () => ({
+  db: {
+    select: jest.fn(),
+    insert: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
   },
 }));
 
 describe('ProductService', () => {
   let productService: ProductService;
-  let mockProductRepository: jest.Mocked<ProductRepository>;
+  let mockProductRepository: jest.Mocked<DrizzleProductRepository>;
 
   const mockProductDto: ProductDto = {
     id: 'product-id',
@@ -40,9 +39,9 @@ describe('ProductService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    productService = new ProductService();
-    mockProductRepository = new ProductRepository(prisma) as jest.Mocked<ProductRepository>;
-    (ProductRepository as jest.Mock).mockImplementation(() => mockProductRepository);
+    mockProductRepository = new DrizzleProductRepository(db) as jest.Mocked<DrizzleProductRepository>;
+    (DrizzleProductRepository as jest.Mock).mockImplementation(() => mockProductRepository);
+    productService = new ProductService(mockProductRepository);
   });
 
   describe('createProduct', () => {

@@ -1,7 +1,7 @@
-import { OrderItemEntity } from '@/domain/entities/order-item.entity';
+import { OrderItemEntity } from './order-item.entity';
 import { failure, Result, success } from '@/lib/result';
-import { OrderDto, OrderItemDto,PaymentResult } from '@/domain/dtos';
-import { ShippingAddress } from '@/lib/contracts/shipping-address';
+import { OrderDto, OrderItemDto, PaymentResult, OrderStatus } from '../dtos';
+import { ShippingAddress } from '@/lib/contracts/shipping-address.ts';
 
 export class OrderEntity {
   public readonly id: string;
@@ -13,11 +13,16 @@ export class OrderEntity {
   public readonly shippingPrice: number;
   public readonly taxPrice: number;
   public readonly totalPrice: number;
+  public readonly status: OrderStatus;
   public readonly isPaid: boolean;
   public readonly paidAt: Date | null;
   public readonly isDelivered: boolean;
   public readonly deliveredAt: Date | null;
+  public readonly trackingNumber: string | null;
+  public readonly customerNotes: string | null;
+  public readonly internalNotes: string | null;
   public readonly createdAt: Date;
+  public readonly updatedAt: Date;
   orderItems: Map<string, OrderItemEntity> = new Map();
 
   private constructor(orderData: OrderDto) {
@@ -30,21 +35,22 @@ export class OrderEntity {
     this.shippingPrice = orderData.shippingPrice;
     this.taxPrice = orderData.taxPrice;
     this.totalPrice = orderData.totalPrice;
+    this.status = orderData.status;
     this.isPaid = orderData.isPaid;
     this.paidAt = orderData.paidAt;
     this.isDelivered = orderData.isDelivered;
     this.deliveredAt = orderData.deliveredAt;
+    this.trackingNumber = orderData.trackingNumber;
+    this.customerNotes = orderData.customerNotes;
+    this.internalNotes = orderData.internalNotes;
     this.createdAt = orderData.createdAt;
+    this.updatedAt = orderData.updatedAt;
     this.initOrderItemsFromDtos(orderData.orderItemDtos);
   }
 
   public static fromDto(orderData: OrderDto): Result<OrderEntity> {
     try {
       const order = new OrderEntity(orderData);
-      const initResult = order.initOrderItemsFromDtos(orderData.orderItemDtos);
-      if (!initResult.success) {
-        return failure(initResult.error);
-      }
       return success(order);
     } catch (error) {
       return failure(error instanceof Error ? error : new Error('Failed to create order from DTO'));
@@ -78,11 +84,16 @@ export class OrderEntity {
       shippingPrice: this.shippingPrice,
       taxPrice: this.taxPrice,
       totalPrice: this.totalPrice,
+      status: this.status,
       isPaid: this.isPaid,
       paidAt: this.paidAt,
       isDelivered: this.isDelivered,
       deliveredAt: this.deliveredAt,
+      trackingNumber: this.trackingNumber,
+      customerNotes: this.customerNotes,
+      internalNotes: this.internalNotes,
       createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
       orderItemDtos: Array.from(this.orderItems.values()).map(item => item.toDto()),
     };
   }
@@ -92,7 +103,9 @@ export class OrderEntity {
       return failure(new Error('Order item belongs to a different order'));
     }
 
-    this.orderItems.set(orderItem.productId, orderItem);
+    if (orderItem.productId) {
+      this.orderItems.set(orderItem.productId, orderItem);
+    }
     return success(this);
   }
 
@@ -141,15 +154,23 @@ export class OrderEntity {
     return Math.round(value * 100) / 100;
   }
 
-  private initOrderItemsFromDtos(orderItems: OrderItemDto[]): Result<void> {
-    for (const item of orderItems) {
-      const orderItem = OrderItemEntity.fromDto(item);
-      if (!orderItem.success) {
-        return failure(new Error(`Failed to initialize order item: ${orderItem.error.message}`));
-      }
-      this.orderItems.set(orderItem.value.productId, orderItem.value);
+  private initOrderItemsFromDtos(orderItemsDtos: OrderItemDto[]): void {
+    this.orderItems.clear();
+
+    if (!orderItemsDtos || orderItemsDtos.length === 0) {
+      return;
     }
-    return success(void 0);
+
+    for (const itemDto of orderItemsDtos) {
+      const orderItemResult = OrderItemEntity.fromDto(itemDto);
+      if (!orderItemResult.success) {
+        throw new Error(`Failed to initialize order item (id: ${itemDto.id}, product_id: ${itemDto.productId}): ${orderItemResult.error.message}`);
+      }
+      if (!orderItemResult.value.productId) {
+        continue;
+      }
+      this.orderItems.set(orderItemResult.value.productId, orderItemResult.value);
+    }
   }
 
   getOrderItemsArray(): OrderItemEntity[] {

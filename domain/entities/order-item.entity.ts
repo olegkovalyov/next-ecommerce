@@ -1,34 +1,50 @@
 import { ProductEntity } from './product.entity';
-import { OrderItemDto } from '@/domain/dtos';
-import { failure, Result, success } from '@/lib/result';
+import { OrderItemDto, ProductDto } from '../dtos';
+import { failure, Result, success } from '../../lib/result/index';
 
 export class OrderItemEntity {
-  private readonly _orderId: string;
-  private readonly _productId: string;
-  private readonly _qty: number;
+  private readonly _id: string;
+  private readonly _orderId: string | null;
+  private readonly _productId: string | null;
+  private readonly _quantity: number;
   private readonly _price: number;
   private readonly _name: string;
   private readonly _slug: string;
   private readonly _image: string;
   private readonly _product: ProductEntity;
+  private readonly _createdAt?: Date;
+  private readonly _updatedAt?: Date;
+  private readonly _productSnapshot?: ProductDto | null;
 
   private constructor(data: OrderItemDto) {
+    this._id = data.id;
     this._orderId = data.orderId;
     this._productId = data.productId;
-    this._qty = data.qty;
+    this._quantity = data.quantity;
     this._price = data.price;
     this._name = data.name;
     this._slug = data.slug;
     this._image = data.image;
+    this._createdAt = data.createdAt;
+    this._updatedAt = data.updatedAt;
+    this._productSnapshot = data.productSnapshot;
+
+    if (!data.productDto) {
+      throw new Error(`OrderItemDto must have a productDto`);
+    }
 
     const productResult = ProductEntity.fromDto(data.productDto);
     if (!productResult.success) {
-      throw productResult.error;
+      throw new Error(`Failed to create product entity`);
     }
     this._product = productResult.value;
   }
 
   public static fromDto(data: OrderItemDto): Result<OrderItemEntity> {
+    if (!data.id) {
+      return failure(new Error('Order item DTO must have an id'));
+    }
+
     if (!data.orderId) {
       return failure(new Error('Order item must belong to an order'));
     }
@@ -37,7 +53,7 @@ export class OrderItemEntity {
       return failure(new Error('Order item must reference a product'));
     }
 
-    if (data.qty <= 0) {
+    if (data.quantity <= 0) {
       return failure(new Error('Quantity must be a positive number'));
     }
 
@@ -74,32 +90,40 @@ export class OrderItemEntity {
 
   public toDto(): OrderItemDto {
     return {
+      id: this._id,
       orderId: this._orderId,
       productId: this._productId,
-      qty: this._qty,
+      quantity: this._quantity,
       price: this._price,
       name: this._name,
       slug: this._slug,
       image: this._image,
       productDto: this._product.toDto(),
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
+      productSnapshot: this._productSnapshot,
     };
   }
 
   public calculateSubtotal(): number {
-    return this._price * this._qty;
+    return this._price * this._quantity;
   }
 
   // Getters
-  public get orderId(): string {
+  public get id(): string {
+    return this._id;
+  }
+
+  public get orderId(): string | null {
     return this._orderId;
   }
 
-  public get productId(): string {
+  public get productId(): string | null {
     return this._productId;
   }
 
-  public get qty(): number {
-    return this._qty;
+  public get quantity(): number {
+    return this._quantity;
   }
 
   public get price(): number {
@@ -121,4 +145,16 @@ export class OrderItemEntity {
   public get product(): ProductEntity {
     return this._product;
   }
-} 
+
+  public get createdAt(): Date | undefined {
+    return this._createdAt;
+  }
+
+  public get updatedAt(): Date | undefined {
+    return this._updatedAt;
+  }
+
+  public get productSnapshot(): ProductDto | null | undefined {
+    return this._productSnapshot;
+  }
+}

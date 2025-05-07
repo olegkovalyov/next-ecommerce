@@ -111,6 +111,20 @@ const sampleData = {
       stock: 8,
     },
   ],
+  carts: {
+    admin: {
+      items: [
+        { productSlug: 'polo-sporting-stretch-shirt', quantity: 2 },
+        { productSlug: 'brooks-brothers-long-sleeved-shirt', quantity: 1 },
+      ],
+    },
+    user: {
+      items: [
+        { productSlug: 'tommy-hilfiger-classic-fit-dress-shirt', quantity: 1 },
+        { productSlug: 'calvin-klein-slim-fit-stretch-shirt', quantity: 3 },
+      ],
+    },
+  },
 };
 
 export default sampleData;

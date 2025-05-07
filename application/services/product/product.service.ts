@@ -1,15 +1,10 @@
 import { ProductEntity } from '@/domain/entities/product.entity';
 import { ProductDto } from '@/domain/dtos/product.dto';
-import { ProductRepository } from '@/infrastructure/repositories/product.repository';
-import { prisma } from '@/infrastructure/prisma/prisma';
 import { Result } from '@/lib/result';
+import { ProductRepositoryInterface } from '@/domain/repositories/product-repository.interface';
 
 export class ProductService {
-  private readonly productRepository: ProductRepository;
-
-  constructor() {
-    this.productRepository = new ProductRepository(prisma);
-  }
+  constructor(private readonly productRepository: ProductRepositoryInterface) {}
 
   async createProduct(productDto: ProductDto): Promise<Result<ProductEntity>> {
     return ProductEntity.fromDto(productDto);

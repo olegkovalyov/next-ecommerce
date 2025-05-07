@@ -14,5 +14,4 @@ export async function sync(): Promise<Result<CartDto>> {
     return failure(new Error('No cart'));
   }
   return success(cartResult.value.toDto());
-
 }

@@ -13,7 +13,8 @@ export class ProductDto {
     public readonly price: number,
     public readonly rating: number,
     public readonly numReviews: number,
-    public readonly createdAt: Date,
+    public readonly createdAt?: Date,
+    public readonly updatedAt?: Date,
   ) {
   }
 }

@@ -3,11 +3,10 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { compareSync } from 'bcrypt-ts-edge';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
 import type { NextAuthConfig } from 'next-auth';
-import { prisma } from '@/infrastructure/prisma/prisma';
-import { cookies } from 'next/headers';
+import { db } from '@/infrastructure/db';
+import * as schema from '@/infrastructure/db/schema';
+import { eq } from 'drizzle-orm';
 
 export const config: NextAuthConfig = {
   pages: {
@@ -30,11 +29,12 @@ export const config: NextAuthConfig = {
         }
 
         // Find user in database
-        const user = await prisma.user.findFirst({
-          where: {
-            email: credentials.email as string,
-          },
-        });
+        const users = await db.select()
+          .from(schema.user)
+          .where(eq(schema.user.email, credentials.email as string))
+          .limit(1);
+
+        const user = users[0];
 
         // Check if user exists and if the password matches
         if (
@@ -82,10 +82,9 @@ export const config: NextAuthConfig = {
           token.name = user.email.split('@')[0];
 
           // Update database to reflect the token name
-          await prisma.user.update({
-            where: { id: user.id },
-            data: { name: token.name },
-          });
+          await db.update(schema.user)
+            .set({ name: token.name })
+            .where(eq(schema.user.id, user.id));
         }
       }
       return token;

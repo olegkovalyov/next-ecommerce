@@ -17,6 +17,7 @@ describe('CartItemEntity', () => {
     rating: 4.5,
     numReviews: 10,
     createdAt: new Date(),
+    updatedAt: new Date(),
   };
 
   const mockCartItemDto: CartItemDto = {

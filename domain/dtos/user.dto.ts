@@ -10,3 +10,8 @@ export interface UserDto {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export enum UserRole {
+  USER = 'user',
+  ADMIN = 'admin',
+}

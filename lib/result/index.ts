@@ -14,9 +14,10 @@ export function hasError<T, E>(result: Result<T, E>): boolean {
   return !result.success;
 }
 
-export function value<T, E>(result: Result<T, E>): T {
+export function value<T, E extends Error>(result: Result<T, E>): T {
   if (!result.success) {
-    throw new Error(`Result is an error: ${result.error}`);
+    // Using type narrowing and a more generic message
+    throw new Error(`Result is an error`);
   }
   return result.value;
 }

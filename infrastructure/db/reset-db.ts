@@ -1,13 +1,31 @@
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { sql } from 'drizzle-orm';
+import dotenv from 'dotenv';
+
+// Load environment variables from .env file
+dotenv.config();
 
 async function resetDatabase() {
+  const connectionString = process.env.DATABASE_URL;
+
+  if (!connectionString) {
+    console.error('Error: DATABASE_URL is not defined in your .env file.');
+    process.exit(1);
+  }
+
+  // Validate that we are not accidentally running on a production database
+  // You might want to add more sophisticated checks, e.g., ensuring the DB name contains 'test' or 'dev'
+  if (connectionString.includes('prod') || connectionString.includes('production')) {
+    console.error('Error: DATABASE_URL appears to be a production database. Aborting reset.');
+    console.error('If you are sure, manually edit this safety check in reset-db.ts.');
+    process.exit(1);
+  }
+
   try {
-    console.log('Starting database cleanup...');
+    console.log(`Starting database cleanup for: ${connectionString.replace(/:[^:]*@/, ':[PASSWORD_HIDDEN]@')}`);
     
     // Create direct connection to the database
-    const connectionString = 'postgresql://postgres:postgres@localhost:5432/next_ecommerce';
     const client = postgres(connectionString);
     const db = drizzle(client);
     
@@ -54,15 +72,30 @@ async function resetDatabase() {
     
     console.log('Dropping _drizzle_migrations table...');
     await db.execute(sql`DROP TABLE IF EXISTS _drizzle_migrations CASCADE;`);
-    
-    // 5. List all remaining tables for verification
-    console.log('Checking for remaining tables...');
-    const remainingTables = await db.execute(sql`
+
+    // 5. Drop the drizzle schema (used by drizzle-kit studio)
+    console.log('Dropping drizzle schema (if exists)...');
+    await db.execute(sql`DROP SCHEMA IF EXISTS drizzle CASCADE;`);
+
+    // 6. List all remaining tables for verification
+    console.log('Checking for remaining tables in public schema...');
+    const remainingTablesResult = await db.execute(sql`
       SELECT tablename 
       FROM pg_tables 
       WHERE schemaname = 'public';
     `);
-    console.log('Remaining tables:', remainingTables);
+    
+    // The result might be an array of objects, or a different structure depending on the driver/client version.
+    // Assuming 'remainingTablesResult' is an array of objects like { tablename: string }
+    const remainingTableNames = Array.isArray(remainingTablesResult) 
+      ? remainingTablesResult.map((row: any) => row.tablename) 
+      : [];
+
+    if (remainingTableNames.length > 0) {
+      console.log('Remaining tables in public schema:', remainingTableNames);
+    } else {
+      console.log('No tables found in public schema after cleanup.');
+    }
     
     console.log('Database cleanup completed successfully.');
     

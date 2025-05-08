@@ -18,6 +18,9 @@
     "test:coverage": "NODE_ENV=test jest --coverage --config=config/jest/jest.config.ts",
     "test:integration": "tsx scripts/run-integration-tests.ts --",
     "test:integration:watch": "tsx scripts/run-integration-tests.ts --watch",
+    "db:reset": "npx dotenv-cli -e .env -- tsx infrastructure/db/reset-db.ts",
+    "db:migrate": "tsx infrastructure/db/migrate.ts",
+    "db:seed": "npx dotenv-cli -e .env -- tsx install/seed.ts",
     "test:all": "npm test && npm run test:integration",
     "switch:local": "node scripts/switch-env.js local",
     "switch:prod": "node scripts/switch-env.js production"

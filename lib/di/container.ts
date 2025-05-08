@@ -1,77 +1,77 @@
-import { ProductService } from '@/application/services/product/product.service';
-import { ProductRepositoryInterface } from '@/domain/repositories/product-repository.interface';
-import { UserRepositoryInterface } from '@/domain/repositories/user-repository.interface';
-import { CartRepositoryInterface } from '@/domain/repositories/cart-repository.interface';
-import { OrderRepositoryInterface } from '@/domain/repositories/order-repository.interface';
-
-import { DrizzleProductRepository } from '@/infrastructure/db/repositories/product.repository';
-import { DrizzleUserRepository } from '@/infrastructure/db/repositories/user.repository';
-import { DrizzleCartRepository } from '@/infrastructure/db/repositories/cart.repository';
-import { DrizzleOrderRepository } from '@/infrastructure/db/repositories/order.repository';
-
 import { db } from '@/infrastructure/db';
-
-export type RepositoryImplementation = 'drizzle';
+import { RepositoryProvider } from './repository.provider';
+import { ServiceProvider } from './service.provider';
+import type {
+  RepositoryImplementation,
+  KnownRepositoryInterfaces,
+  KnownServiceInterfaces,
+  ProductRepositoryInterface,
+  UserRepositoryInterface,
+  CartRepositoryInterface,
+  OrderRepositoryInterface,
+  ProductServiceInterface
+} from './types';
 
 export class Container {
   private static instance: Container;
-  private serviceCache: Map<string, any> = new Map();
-  private repositories: Record<string, any> = {};
   
-  private constructor(private implementation: RepositoryImplementation = 'drizzle') {
-    this.initializeRepositories();
+  private implementation: RepositoryImplementation;
+  private repositoriesCache: Record<string, KnownRepositoryInterfaces> = {};
+  private serviceCache: Map<string, KnownServiceInterfaces> = new Map();
+
+  private repositoryProvider: RepositoryProvider;
+  private serviceProvider: ServiceProvider;
+  
+  private constructor(implementation: RepositoryImplementation = 'drizzle') {
+    this.implementation = implementation;
+    // Initialize providers
+    this.repositoryProvider = new RepositoryProvider(this.implementation, this.repositoriesCache, db);
+    this.serviceProvider = new ServiceProvider(this.serviceCache, this.repositoryProvider);
   }
   
   public static getInstance(implementation?: RepositoryImplementation): Container {
     if (!Container.instance) {
       Container.instance = new Container(implementation);
+    } else if (implementation && Container.instance.implementation !== implementation) {
+      // If implementation changes, re-initialize the container with the new one.
+      // This will create new provider instances with the new implementation and clear caches.
+      Container.instance.implementation = implementation; // Update implementation first
+      Container.instance.repositoriesCache = {}; // Clear cache
+      Container.instance.serviceCache.clear(); // Clear cache
+      
+      // Re-create providers with the new implementation and cleared caches
+      Container.instance.repositoryProvider = new RepositoryProvider(
+        Container.instance.implementation, 
+        Container.instance.repositoriesCache, 
+        db
+      );
+      Container.instance.serviceProvider = new ServiceProvider(
+        Container.instance.serviceCache, 
+        Container.instance.repositoryProvider
+      );
     }
-    
-    if (implementation && Container.instance.implementation !== implementation) {
-      Container.instance.implementation = implementation;
-      Container.instance.initializeRepositories();
-      Container.instance.serviceCache.clear();
-    }
-    
     return Container.instance;
   }
   
-  private initializeRepositories(): void {
-    // Drizzle repositories for all entities
-    this.repositories.productRepository = new DrizzleProductRepository(db);
-    this.repositories.userRepository = new DrizzleUserRepository(db);
-    this.repositories.cartRepository = new DrizzleCartRepository(db);
-    this.repositories.orderRepository = new DrizzleOrderRepository(db);
-  }
-  
-  // Product service
-  public getProductService(): ProductService {
-    const cacheKey = 'productService';
-    
-    if (!this.serviceCache.has(cacheKey)) {
-      this.serviceCache.set(
-        cacheKey, 
-        new ProductService(this.repositories.productRepository)
-      );
-    }
-    
-    return this.serviceCache.get(cacheKey);
-  }
-  
-  // Repository getters
+  // Delegate repository getters to RepositoryProvider
   public getProductRepository(): ProductRepositoryInterface {
-    return this.repositories.productRepository;
+    return this.repositoryProvider.getProductRepository();
   }
 
   public getUserRepository(): UserRepositoryInterface {
-    return this.repositories.userRepository;
+    return this.repositoryProvider.getUserRepository();
   }
 
   public getCartRepository(): CartRepositoryInterface {
-    return this.repositories.cartRepository;
+    return this.repositoryProvider.getCartRepository();
   }
 
   public getOrderRepository(): OrderRepositoryInterface {
-    return this.repositories.orderRepository;
+    return this.repositoryProvider.getOrderRepository();
   }
-} 
+
+  // Delegate service getters to ServiceProvider
+  public getProductService(): ProductServiceInterface {
+    return this.serviceProvider.getProductService();
+  }
+}

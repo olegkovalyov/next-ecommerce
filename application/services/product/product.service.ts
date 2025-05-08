@@ -2,8 +2,9 @@ import { ProductEntity } from '@/domain/entities/product.entity';
 import { ProductDto } from '@/domain/dtos/product.dto';
 import { Result } from '@/lib/result';
 import { ProductRepositoryInterface } from '@/domain/repositories/product-repository.interface';
+import { ProductServiceInterface } from './product-service.interface';
 
-export class ProductService {
+export class ProductService implements ProductServiceInterface {
   constructor(private readonly productRepository: ProductRepositoryInterface) {}
 
   async createProduct(productDto: ProductDto): Promise<Result<ProductEntity>> {

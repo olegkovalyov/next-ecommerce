@@ -3,10 +3,6 @@ import path from 'path';
 import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
-// Assumes that the main schema export is in 'infrastructure/db/schema/index.ts' (or a similar file)
-// and can be resolved from the project root as './infrastructure/db/schema'
-import * as allSchemas from './infrastructure/db/schema'; // Using 'allSchemas' to avoid name conflicts
-
 // Load environment variables from .env.test
 // __dirname will be the project root, as jest.setup.ts is in the root
 dotenv.config({ path: path.resolve(__dirname, '.env.test') });

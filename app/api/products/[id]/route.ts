@@ -1,17 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Container } from '@/lib/di/container';
 
+
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+): Promise<NextResponse> {
+
   try {
+    const url = new URL(request.url);
+    const segments = url.pathname.split('/');
+    const id = segments[segments.length - 1];
     const productService = Container.getInstance().getProductService();
-    const productResult = await productService.loadProductById(params.id);
+    const productResult = await productService.loadProductById(id);
 
     if (!productResult.success) {
       return NextResponse.json(
-        { message: productResult.error.message },
+        { message: productResult.error?.message || 'Product not found' },
         { status: 404 }
       );
     }
@@ -24,4 +29,4 @@ export async function GET(
       { status: 500 }
     );
   }
-} 
+}

@@ -14,10 +14,10 @@ export default async function ProductPage(
     params,
   }: ProductPageProps): Promise<ReactElement> {
   const { slug } = await params;
-  
+
   // Get properly configured ProductService from the DI container
   const productService = Container.getInstance().getProductService();
-  
+
   const productLoadResult = await productService.loadProductBySlug(slug);
   if (!productLoadResult.success) {
     return notFound();
@@ -33,7 +33,7 @@ export default async function ProductPage(
           <ProductImages images={productDto.images} />
         </div>
         <div className="col-span-2 p-5">
-          <ProductDetails product={productDto} />
+          <ProductDetails productDto={productDto} />
         </div>
         <ProductActions
           productDto={productDto}

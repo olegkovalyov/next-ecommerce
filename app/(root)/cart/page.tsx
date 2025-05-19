@@ -8,7 +8,7 @@ import { useCartStore } from '@/store/cart.store';
 import { CartEntity } from '@/domain/entities/cart.entity';
 import { CartItems } from '@/presentation/components/shared/cart/cart-items';
 import { useAuthStore } from '@/store/auth.store';
-import { useCartSync } from '@/application/hooks/use-cart-sync';
+import { useCartSync } from '@/application/cart/hooks/use-cart-sync';
 
 const CartPage = (): ReactElement => {
   const { getCartDto } = useCartStore();

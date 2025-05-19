@@ -18,7 +18,7 @@ import { ShippingAddress } from '@/lib/contracts/shipping-address';
 import { shippingAddressDefaultValues } from '@/lib/constants/shipping-address';
 import { Input } from '@/presentation/components/ui/input';
 import { Button } from '@/presentation/components/ui/button';
-import { useToast } from '@/application/hooks/use-sonner-toast';
+import { useToast } from '@/presentation/hooks/use-sonner-toast.ts';
 import { updateUserAddress } from '@/lib/actions/user/user.actions';
 
 const ShippingAddressForm = ({ address }: { address: ShippingAddress | null }) => {

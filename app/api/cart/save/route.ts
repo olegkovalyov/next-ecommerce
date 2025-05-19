@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { CartDto } from '@/domain/dtos';
 import { CartEntity } from '@/domain/entities/cart.entity';
 import { auth } from '@/infrastructure/auth/auth';
-import { CartService } from '@/application/services/cart/cart.service';
+import { Container } from '@/lib/di';
 
 export async function POST(request: Request): Promise<NextResponse> {
 
@@ -25,7 +25,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ sucess: false });
   }
   const cart = cartCreateResult.value;
-  const result = await CartService.save(cart);
+  const result = await Container.getInstance().getCartService().save(cart);
   if (!result.success) {
     return NextResponse.json({ sucess: false }, { status: 500 });
   }

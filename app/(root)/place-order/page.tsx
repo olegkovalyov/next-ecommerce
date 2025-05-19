@@ -18,8 +18,8 @@ import { auth } from '@/infrastructure/auth/auth';
 import { ShippingAddress } from '@/lib/contracts/shipping-address';
 import CheckoutSteps from '@/presentation/components/shared/checkout/checkout-steps';
 import PlaceOrderForm from '@/presentation/components/shared/place-order/place-order-form';
-import { CartService } from '@/application/services/cart/cart.service';
 import { ReactElement } from 'react';
+import { Container } from '@/lib/di';
 
 export const metadata: Metadata = {
   title: 'Place Order',
@@ -31,7 +31,7 @@ const PlaceOrderPage = async (): Promise<ReactElement> => {
 
   if (!userId) throw new Error('User not found');
 
-  const cartResult = await CartService.loadByUserId(userId);
+  const cartResult = await Container.getInstance().getCartService().loadByUserId(userId);
   if (!cartResult.success) {
     redirect('/cart');
   }

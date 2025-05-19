@@ -1,7 +1,9 @@
-import { ProductService } from '@/application/services/product/product.service';
+import { ProductService } from '@/application/product/services/product.service.ts';
+import CartService from '@/application/cart/services/cart.service';
 import type {
   KnownServiceInterfaces,
-  ProductServiceInterface
+  ProductServiceInterface,
+  CartServiceInterface
 } from './types';
 import type { RepositoryProvider } from './repository.provider'; // To get repositories
 
@@ -21,14 +23,13 @@ export class ServiceProvider {
     }
     return this.serviceCache.get(cacheKey) as ProductServiceInterface;
   }
-  
-  // Add other service getters here if needed, e.g.:
-  // public getUserService(): UserServiceInterface {
-  //   const cacheKey = 'userService';
-  //   if (!this.serviceCache.has(cacheKey)) {
-  //     const userService = new UserService(this.repositoryProvider.getUserRepository());
-  //     this.serviceCache.set(cacheKey, userService as KnownServiceInterfaces);
-  //   }
-  //   return this.serviceCache.get(cacheKey) as UserServiceInterface;
-  // }
+
+  public getCartService(): CartServiceInterface {
+    const cacheKey = 'cartService';
+    if (!this.serviceCache.has(cacheKey)) {
+      const cartService = new CartService();
+      this.serviceCache.set(cacheKey, cartService as KnownServiceInterfaces);
+    }
+    return this.serviceCache.get(cacheKey) as CartServiceInterface;
+  }
 }

@@ -18,7 +18,7 @@ import { Button } from '@/presentation/components/ui/button';
 import { ArrowRight, Loader } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/presentation/components/ui/radio-group';
 import { updateUserPaymentMethod } from '@/lib/actions/user/user.actions';
-import { useToast } from '@/application/hooks/use-sonner-toast';
+import { useToast } from '@/presentation/hooks/use-sonner-toast.ts';
 
 const PaymentMethodForm = ({
                              preferredPaymentMethod,

@@ -6,7 +6,7 @@ import { Button } from '@/presentation/components/ui/button';
 import { Loader, Minus, Plus } from 'lucide-react';
 import { ReactElement } from 'react';
 import { CartDto } from '@/domain/dtos';
-import { useCartActions } from '@/application/hooks/use-cart-handlers';
+import { useCartActions } from '@/application/cart/hooks/use-cart-handlers';
 
 export function CartItems({ cartDto }: { cartDto: CartDto }): ReactElement {
   const { isPending, handleCartItemAction, handleCartAction } = useCartActions({

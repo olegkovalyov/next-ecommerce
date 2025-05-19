@@ -5,7 +5,7 @@ import { APP_DESCRIPTION, APP_NAME, SERVER_URL } from '@/lib/constants';
 import ClientLayout from '@/app/client-layout';
 import { ReactElement } from 'react';
 import { auth } from '@/infrastructure/auth/auth';
-import { sync as syncCart } from '@/lib/actions/cart/sync';
+import { sync as syncCart } from '@/application/cart/actions/sync';
 
 const inter = Inter({ subsets: ['latin'] });
 

@@ -3,7 +3,7 @@
 import { Button } from '@/presentation/components/ui/button';
 import { Plus, Minus, Loader } from 'lucide-react';
 import { CartDto, ProductDto } from '@/domain/dtos';
-import { useCartActions } from '@/application/hooks/use-cart-handlers';
+import { useCartActions } from '@/application/cart/hooks/use-cart-handlers';
 
 interface AddToCartProps {
   productDto: ProductDto;

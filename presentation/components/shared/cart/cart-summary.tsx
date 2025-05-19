@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { clearCart } from '@/lib/actions/cart/clear-cart.action';
+import { clearCart } from '@/application/cart/actions/clear-cart.action';
 import { Button } from '@/presentation/components/ui/button';
 import { Loader } from 'lucide-react';
 import { ReactElement } from 'react';
@@ -90,7 +90,7 @@ export function CartSummary(
         ) : (
           <Button
             className="w-full"
-            onClick={() => router.push('/checkout')}
+            onClick={() => router.push('/shipping-address')}
           >
             Proceed to checkout
           </Button>

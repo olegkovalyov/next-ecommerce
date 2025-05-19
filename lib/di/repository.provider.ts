@@ -1,7 +1,4 @@
-import { DrizzleProductRepository } from '@/infrastructure/db/repositories/product.repository';
-import { DrizzleUserRepository } from '@/infrastructure/db/repositories/user.repository';
-import { DrizzleCartRepository } from '@/infrastructure/db/repositories/cart.repository';
-import { DrizzleOrderRepository } from '@/infrastructure/db/repositories/order.repository';
+import { DrizzleProductRepository } from '@/infrastructure/db/repositories/product/product.repository.ts';
 import { db as DrizzleDBInstance } from '@/infrastructure/db'; // Renamed to avoid conflict if 'db' is used as a var name
 
 import type {
@@ -12,6 +9,9 @@ import type {
   CartRepositoryInterface,
   OrderRepositoryInterface
 } from './types';
+import { DrizzleUserRepository } from '@/infrastructure/db/repositories/user/user.repository.ts';
+import { DrizzleCartRepository } from '@/infrastructure/db/repositories/cart/cart.repository.ts';
+import { DrizzleOrderRepository } from '@/infrastructure/db/repositories/order/order.repository.ts';
 
 export class RepositoryProvider {
   constructor(

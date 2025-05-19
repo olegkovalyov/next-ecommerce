@@ -1,14 +1,14 @@
 'use server';
 
 import { OrderEntity } from '@/domain/entities/order.entity';
-import { DrizzleOrderRepository } from '@/infrastructure/db/repositories/order.repository';
 import { OrderDto, PaymentResult, OrderStatus } from '@/domain/dtos/order.dto';
 import { auth } from '@/infrastructure/auth/auth';
 import { failure, Result, success } from '@/lib/result';
-import { CartService } from '@/application/services/cart/cart.service';
 import { OrderItemDto } from '@/domain/dtos';
 import { ShippingAddress } from '@/lib/contracts/shipping-address';
 import { db } from '@/infrastructure/db';
+import { Container } from '@/lib/di';
+import { DrizzleOrderRepository } from '@/infrastructure/db/repositories/order/order.repository.ts';
 
 export async function createOrder(): Promise<Result<string>> {
 
@@ -17,7 +17,7 @@ export async function createOrder(): Promise<Result<string>> {
     return failure(new Error('User is not authenticated'));
   }
 
-  const cartResult = await CartService.loadByUserId(user.id);
+  const cartResult = await Container.getInstance().getCartService().loadByUserId(user.id);
   if (!cartResult.success) {
     return failure(new Error('Cart not found'));
   }

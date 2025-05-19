@@ -1,8 +1,8 @@
-import { Product } from '@/lib/contracts/product';
 import ProductCard from '@/presentation/components/shared/product/product-card';
 import { ReactElement } from 'react';
+import { ProductDto } from '@/domain/dtos';
 
-const ProductList = ({ data, title, limit }: { data: Array<Product>; title?: string; limit?: number }): ReactElement => {
+const ProductList = ({ data, title, limit }: { data: Array<ProductDto>; title?: string; limit?: number }): ReactElement => {
 
   const limitedData = limit ? data.slice(0, limit) : data;
 
@@ -12,8 +12,8 @@ const ProductList = ({ data, title, limit }: { data: Array<Product>; title?: str
       {data.length > 0 ? (
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {limitedData.map((product: Product) => (
-            <ProductCard key={product.slug} product={product} />
+          {limitedData.map((productDto: ProductDto) => (
+            <ProductCard key={productDto.slug} productDto={productDto} />
           ))}
         </div>
       ) : (

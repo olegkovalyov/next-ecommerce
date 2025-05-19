@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/infrastructure/auth/auth';
 import { cookies } from 'next/headers';
-import { CartService } from '@/application/services/cart/cart.service';
+import { Container } from '@/lib/di';
 
 export async function POST(): Promise<NextResponse> {
   const user = (await auth())?.user;
@@ -19,7 +19,7 @@ export async function POST(): Promise<NextResponse> {
   console.log(cartSyncCookie);
 
   let cartDto = null;
-  const cartResult = await CartService.loadByUserId(user.id);
+  const cartResult = await Container.getInstance().getCartService().loadByUserId(user.id);
   if (cartResult.success) {
     cartDto = cartResult.value.toDto();
   }

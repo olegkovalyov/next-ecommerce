@@ -8,7 +8,7 @@ import { ProductDto } from '@/domain/dtos';
 import { useCartStore } from '@/store/cart.store';
 import { ReactElement, useEffect } from 'react';
 import { useAuthStore } from '@/store/auth.store';
-import { useCartSync } from '@/application/hooks/use-cart-sync';
+import { useCartSync } from '@/application/cart/hooks/use-cart-sync';
 
 interface ProductActionsProps {
   productDto: ProductDto;
